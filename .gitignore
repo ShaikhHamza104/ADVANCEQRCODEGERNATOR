@@ -1,0 +1,46 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Environment variables
+.env
+.env.local
+
+# Database
+db.sqlite3
+*.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Django
+*.log
+media/
+staticfiles/
+
+# Output folder (except README and .gitkeep)
+Output/*
+!Output/README.md
+!Output/.gitkeep
+
+# Temporary files
+*.tmp
+*.bak
+*.old

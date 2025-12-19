@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirm Upgrade{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center animate__animated animate__fadeIn">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h4 class="mb-0"><i class="bi bi-credit-card"></i> Confirm Your Upgrade</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        <div class="display-1 text-primary mb-3">
+                            <i class="bi bi-{% if plan_type == 'PRO' %}rocket-takeoff{% else %}building{% endif %}"></i>
+                        </div>
+                        <h3>{{ plan_name }} Plan</h3>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> 
+                        This is a demo. In production, you would be redirected to a secure payment gateway.
+                    </div>
+
+                    <table class="table table-borderless">
+                        <tr>
+                            <td><strong>Plan:</strong></td>
+                            <td class="text-end">{{ plan_name }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Billing Cycle:</strong></td>
+                            <td class="text-end text-capitalize">{{ billing_cycle }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Amount:</strong></td>
+                            <td class="text-end"><h4 class="text-primary mb-0">${{ price }}</h4></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2"><hr></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Features:</strong></td>
+                            <td></td>
+                        </tr>
+                    </table>
+
+                    <ul class="list-unstyled mb-4">
+                        {% if plan_type == 'PRO' %}
+                        <li><i class="bi bi-check-circle-fill text-success"></i> 50 QR Codes</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> 1GB Storage</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> 10,000 API Calls/Day</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Priority Support</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Custom Branding</li>
+                        {% else %}
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Unlimited QR Codes</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Unlimited Storage</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Unlimited API Calls</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Priority Support</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Custom Branding</li>
+                        <li><i class="bi bi-check-circle-fill text-success"></i> Advanced Analytics</li>
+                        {% endif %}
+                    </ul>
+
+                    <form method="post" action="{% url 'upgrade_plan' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="plan_type" value="{{ plan_type }}">
+                        <input type="hidden" name="billing_cycle" value="{{ billing_cycle }}">
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle"></i> Confirm & Activate
+                            </button>
+                            <a href="{% url 'pricing' %}" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to Pricing
+                            </a>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-check"></i> Secure payment processing
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

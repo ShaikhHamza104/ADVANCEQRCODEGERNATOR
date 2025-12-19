@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Update Profile{% endblock %}
+
+{% block content %}
+<div class="row mb-3">
+    <div class="col">
+        <a href="{% url 'profile_detail' profile.id %}" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Profile
+        </a>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">Update Profile: {{ profile.metadata.label }}</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="alert alert-info">
+                        <strong>User ID:</strong> {{ profile.user_id }}<br>
+                        <strong>Label:</strong> {{ profile.metadata.label }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select class="form-select" id="role" name="role">
+                            <option value="User" {% if profile.kelley_attributes.role == "User" %}selected{% endif %}>User</option>
+                            <option value="Admin" {% if profile.kelley_attributes.role == "Admin" %}selected{% endif %}>Admin</option>
+                            <option value="Notary" {% if profile.kelley_attributes.role == "Notary" %}selected{% endif %}>Notary</option>
+                            <option value="Auditor" {% if profile.kelley_attributes.role == "Auditor" %}selected{% endif %}>Auditor</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="function" class="form-label">Function/Description</label>
+                        <input type="text" class="form-control" id="function" name="function" 
+                               value="{{ profile.kelley_attributes.function }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="revocation_state" class="form-label">Status</label>
+                        <select class="form-select" id="revocation_state" name="revocation_state">
+                            <option value="Active" {% if profile.security_flags.revocation_state == "Active" %}selected{% endif %}>Active</option>
+                            <option value="Suspended" {% if profile.security_flags.revocation_state == "Suspended" %}selected{% endif %}>Suspended</option>
+                            <option value="Revoked" {% if profile.security_flags.revocation_state == "Revoked" %}selected{% endif %}>Revoked</option>
+                        </select>
+                    </div>
+
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h6 class="mb-0">Security Flags</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="is_high_privilege" 
+                                       name="is_high_privilege" {% if profile.security_flags.is_high_privilege %}checked{% endif %}>
+                                <label class="form-check-label" for="is_high_privilege">
+                                    High Privilege Access
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_private" 
+                                       name="is_private" {% if profile.security_flags.is_private %}checked{% endif %}>
+                                <label class="form-check-label" for="is_private">
+                                    Private Profile
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'profile_detail' profile.id %}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-save"></i> Update Profile
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

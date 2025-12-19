@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Subscription Details{% endblock %}
+
+{% block content %}
+<div class="animate__animated animate__fadeIn">
+    <h1 class="text-white mb-4">
+        <i class="bi bi-credit-card"></i> My Subscription
+    </h1>
+
+    <div class="row">
+        <!-- Current Plan Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="bi bi-star"></i> Current Plan</h4>
+                </div>
+                <div class="card-body">
+                    <h2 class="mb-3">
+                        {% if subscription.plan_type == 'FREE' %}
+                        <i class="bi bi-gift text-primary"></i>
+                        {% elif subscription.plan_type == 'PRO' %}
+                        <i class="bi bi-rocket-takeoff text-success"></i>
+                        {% else %}
+                        <i class="bi bi-building text-warning"></i>
+                        {% endif %}
+                        {{ subscription.plan_name }}
+                        {% if user.is_superuser %}
+                        <span class="badge bg-danger ms-2">ADMIN - NEVER EXPIRES</span>
+                        {% endif %}
+                    </h2>
+                    
+                    <div class="mb-3">
+                        <strong>Billing Cycle:</strong>
+                        <span class="badge bg-info">{{ subscription.billing_cycle|title }}</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Status:</strong>
+                        <span class="badge {% if subscription.status == 'active' %}bg-success{% else %}bg-danger{% endif %}">
+                            {{ subscription.status|title }}
+                        </span>
+                    </div>
+                    
+                    {% if subscription.plan_type != 'FREE' %}
+                    <div class="mb-3">
+                        <strong>Current Period:</strong>
+                        <p class="text-muted small mb-0">
+                            {{ subscription.current_period_start|date:"M d, Y" }} - {{ subscription.current_period_end|date:"M d, Y" }}
+                        </p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if subscription.cancel_at_period_end %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i> Subscription will be cancelled at the end of the billing period.
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2 mt-4">
+                        <a href="{% url 'pricing' %}" class="btn btn-primary">
+                            <i class="bi bi-arrow-up-circle"></i> Upgrade Plan
+                        </a>
+                        
+                        {% if subscription.plan_type != 'FREE' and not subscription.cancel_at_period_end %}
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                            <i class="bi bi-x-circle"></i> Cancel Subscription
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usage Card -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0"><i class="bi bi-bar-chart"></i> Usage Statistics</h4>
+                </div>
+                <div class="card-body">
+                    <!-- QR Codes Usage -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong><i class="bi bi-qr-code"></i> QR Codes</strong>
+                            <span>
+                                {{ quota_info.used }} / 
+                                {% if quota_info.limit == 'unlimited' %}
+                                    <span class="text-success">Unlimited</span>
+                                {% else %}
+                                    {{ quota_info.limit }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if quota_info.limit != 'unlimited' %}
+                        <div class="progress" style="height: 25px;">
+                            {% with percentage=quota_info.used|percentage:quota_info.limit %}
+                            {% with threshold=quota_info.limit|multiply:0.8 %}
+                            <div class="progress-bar {% if quota_info.used >= quota_info.limit %}bg-danger{% elif quota_info.used >= threshold %}bg-warning{% else %}bg-success{% endif %}" 
+                                 role="progressbar" 
+                                 style="width: {{ percentage }}%;"
+                                 aria-valuenow="{{ quota_info.used }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="{{ quota_info.limit }}">
+                                {{ percentage }}%
+                            </div>
+                            {% endwith %}
+                            {% endwith %}
+                        </div>
+                        {% if not quota_info.can_create %}
+                        <div class="alert alert-warning mt-2">
+                            <i class="bi bi-exclamation-triangle"></i> You've reached your QR code limit. 
+                            <a href="{% url 'pricing' %}" class="alert-link">Upgrade now</a> for more!
+                        </div>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+
+                    <!-- Storage Usage -->
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong><i class="bi bi-hdd"></i> Storage</strong>
+                            <span>
+                                {{ subscription.usage.storage_used_mb|floatformat:2 }}MB / 
+                                {% if subscription.features.storage_mb == -1 %}
+                                    <span class="text-success">Unlimited</span>
+                                {% else %}
+                                    {{ subscription.features.storage_mb }}MB
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% if subscription.features.storage_mb != -1 %}
+                        <div class="progress" style="height: 25px;">
+                            {% with storage_percent=subscription.usage.storage_used_mb|floatformat:0 %}
+                            <div class="progress-bar bg-info" 
+                                 role="progressbar" 
+                                 style="width: {{ storage_percent }}%;"
+                                 aria-valuenow="{{ storage_percent }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100">
+                                {{ storage_percent }}%
+                            </div>
+                            {% endwith %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- API Calls -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <strong><i class="bi bi-code-slash"></i> API Calls Today</strong>
+                            <span>
+                                {{ subscription.usage.api_calls_today|default:0 }} / 
+                                {% if subscription.features.api_calls_per_day == -1 %}
+                                    <span class="text-success">Unlimited</span>
+                                {% else %}
+                                    {{ subscription.features.api_calls_per_day }}
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Plan Features -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="bi bi-list-stars"></i> Your Plan Features</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="feature-item">
+                                <i class="bi bi-{% if subscription.features.priority_support %}check-circle-fill text-success{% else %}x-circle-fill text-muted{% endif %} me-2"></i>
+                                <strong>Priority Support</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="feature-item">
+                                <i class="bi bi-{% if subscription.features.custom_branding %}check-circle-fill text-success{% else %}x-circle-fill text-muted{% endif %} me-2"></i>
+                                <strong>Custom Branding</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="feature-item">
+                                <i class="bi bi-{% if subscription.features.advanced_analytics %}check-circle-fill text-success{% else %}x-circle-fill text-muted{% endif %} me-2"></i>
+                                <strong>Advanced Analytics</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Subscription Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle"></i> Cancel Subscription</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-bold">Are you sure you want to cancel your subscription?</p>
+                <p>You can choose to:</p>
+                <ul>
+                    <li><strong>Cancel at period end:</strong> Keep access until {{ subscription.current_period_end|date:"M d, Y" }}</li>
+                    <li><strong>Cancel immediately:</strong> Downgrade to Free plan now</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Subscription</button>
+                <form method="post" action="{% url 'cancel_subscription' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="immediate" value="false">
+                    <button type="submit" class="btn btn-warning">Cancel at Period End</button>
+                </form>
+                <form method="post" action="{% url 'cancel_subscription' %}" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="immediate" value="true">
+                    <button type="submit" class="btn btn-danger">Cancel Immediately</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

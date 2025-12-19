@@ -1,0 +1,27 @@
+[project]
+name = "advanceqrcodegernator"
+version = "0.1.0"
+description = "Advanced QR Code Generator is a Django-based web application that lets users create, customize, and manage QR codes with enterprise-grade security.
+
+What it does:
+
+Generate QR codes with customization options (colors, logos, styles)
+User accounts with secure login (password + Google/GitHub OAuth)
+Two-factor authentication (2FA) for extra security
+Save and manage QR code history with favorites
+Subscription tiers (Free, Pro, Enterprise) with usage quotas
+Admin dashboard for user management and audit logs
+Built with: Django, MongoDB, Bootstrap 5, and secured with AES-256 encryption."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "argon2-cffi>=25.1.0",
+    "cryptography>=46.0.3",
+    "django>=5.2.9",
+    "pillow>=12.0.0",
+    "pymongo>=4.15.5",
+    "pyotp>=2.9.0",
+    "python-dotenv>=1.2.1",
+    "qrcode>=8.2",
+    "social-auth-app-django>=5.6.0",
+]

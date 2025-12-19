@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate__animated animate__fadeIn">
+    <div class="col-md-8">
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-light mb-3">
+            <i class="bi bi-arrow-left"></i> Back to Admin Dashboard
+        </a>
+        
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0"><i class="bi bi-plus-circle"></i> Create New TOTP Profile</h3>
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-person"></i> User Information</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="user_id" class="form-label">User ID / Email *</label>
+                                <input type="text" class="form-control" id="user_id" name="user_id" required>
+                                <small class="form-text text-muted">Enter the user's email address or unique identifier</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="label" class="form-label">Display Label *</label>
+                                <input type="text" class="form-control" id="label" name="label" required>
+                                <small class="form-text text-muted">Name shown in authenticator app</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-gear"></i> TOTP Configuration</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="issuer" class="form-label">Issuer</label>
+                                <input type="text" class="form-control" id="issuer" name="issuer" value="KTVS">
+                                <small class="form-text text-muted">Organization name</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-award"></i> Kelley Attributes</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="role" class="form-label">Role</label>
+                                <select class="form-select" id="role" name="role">
+                                    <option value="User">User</option>
+                                    <option value="Administrator">Administrator</option>
+                                    <option value="BSA Level">BSA Level</option>
+                                    <option value="Lvl 1">Lvl 1</option>
+                                    <option value="ARO - USA">ARO - USA</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="function" class="form-label">Function</label>
+                                <input type="text" class="form-control" id="function" name="function" value="Standard Access">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="border-bottom pb-2"><i class="bi bi-shield-fill-exclamation"></i> Security Flags</h5>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="is_high_privilege" name="is_high_privilege">
+                            <label class="form-check-label" for="is_high_privilege">
+                                <i class="bi bi-star-fill text-warning"></i> High Privilege Account
+                            </label>
+                        </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" id="is_private" name="is_private">
+                            <label class="form-check-label" for="is_private">
+                                <i class="bi bi-lock-fill text-info"></i> Private Profile
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> A random TOTP seed will be automatically generated and encrypted using AES-256-GCM encryption.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-plus-circle"></i> Create Profile
+                        </button>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

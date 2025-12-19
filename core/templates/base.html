@@ -1,0 +1,613 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KTVS - {% block title %}Home{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --danger-color: #dc3545;
+            --dark-color: #212529;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .navbar {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.95) !important;
+            border-bottom: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand:hover {
+            transform: scale(1.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, #667eea 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            font-weight: 600;
+            padding: 1.2rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 600;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            border: none;
+            border-radius: 8px;
+        }
+        
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .table thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .footer {
+            margin-top: 4rem;
+            padding: 2rem 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            color: white;
+            text-align: center;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            backdrop-filter: blur(10px);
+        }
+        
+        .qr-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            font-size: 3rem;
+            opacity: 0.3;
+        }
+        
+        .nav-link {
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color) !important;
+            transform: translateY(-2px);
+        }
+        
+        .dropdown-item {
+            cursor: pointer;
+        }
+        
+        .dropdown-menu {
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .logout-btn {
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4);
+        }
+        
+        .logout-btn:active {
+            transform: translateY(0);
+        }
+        
+        .oauth-btn {
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border-width: 2px;
+        }
+        
+        .oauth-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-width: 2px;
+        }
+        
+        .oauth-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        /* Coupon Marquee Styles */
+        .coupon-marquee-container {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 0.8rem 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .coupon-marquee {
+            display: flex;
+            animation: scroll-left 30s linear infinite;
+            white-space: nowrap;
+        }
+        
+        .coupon-marquee:hover {
+            animation-play-state: paused;
+        }
+        
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        .coupon-item {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.5rem 2rem;
+            margin: 0 1rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 25px;
+            font-weight: 700;
+            color: #333;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .coupon-item:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        
+        .coupon-code {
+            font-size: 1.1rem;
+            color: #f5576c;
+            margin-left: 0.5rem;
+            letter-spacing: 1px;
+        }
+        
+        .coupon-discount {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 15px;
+            margin-right: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        /* ========== RESPONSIVE STYLES ========== */
+        
+        /* Mobile-first responsive adjustments */
+        @media (max-width: 576px) {
+            body {
+                font-size: 14px;
+            }
+            
+            .navbar-brand {
+                font-size: 1.2rem;
+            }
+            
+            .card {
+                border-radius: 12px;
+                margin: 0.5rem;
+            }
+            
+            .card:hover {
+                transform: none;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .btn {
+                padding: 0.5rem 1rem;
+                font-size: 0.9rem;
+            }
+            
+            .btn-lg {
+                padding: 0.6rem 1.2rem;
+                font-size: 1rem;
+            }
+            
+            .table {
+                font-size: 0.85rem;
+            }
+            
+            .table th, .table td {
+                padding: 0.5rem;
+            }
+            
+            .badge {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.75rem;
+            }
+            
+            h1 { font-size: 1.5rem; }
+            h2 { font-size: 1.3rem; }
+            h3 { font-size: 1.15rem; }
+            h4 { font-size: 1rem; }
+            
+            .footer {
+                padding: 1rem 0;
+                margin-top: 2rem;
+            }
+            
+            .stat-icon {
+                font-size: 2rem;
+            }
+            
+            .coupon-marquee-container {
+                padding: 0.5rem 0;
+            }
+            
+            .coupon-item {
+                padding: 0.3rem 1rem;
+                margin: 0 0.5rem;
+                font-size: 0.85rem;
+            }
+            
+            .coupon-discount {
+                padding: 0.2rem 0.5rem;
+                font-size: 0.8rem;
+            }
+        }
+        
+        /* Tablet adjustments */
+        @media (min-width: 577px) and (max-width: 991px) {
+            .card {
+                border-radius: 15px;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* Touch device optimizations */
+        @media (hover: none) and (pointer: coarse) {
+            .card:hover {
+                transform: none;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            }
+            
+            .btn:hover {
+                transform: none;
+            }
+            
+            .nav-link:hover {
+                transform: none;
+            }
+        }
+        
+        /* Landscape mobile */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .navbar {
+                padding: 0.25rem 0;
+            }
+            
+            .footer {
+                padding: 0.5rem 0;
+            }
+        }
+        
+        /* Safe area for notched devices */
+        @supports (padding: max(0px)) {
+            .navbar {
+                padding-left: max(1rem, env(safe-area-inset-left));
+                padding-right: max(1rem, env(safe-area-inset-right));
+            }
+            
+            .footer {
+                padding-bottom: max(1rem, env(safe-area-inset-bottom));
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .navbar, .footer, .btn, .coupon-marquee-container {
+                display: none !important;
+            }
+            
+            body {
+                background: white !important;
+            }
+            
+            .card {
+                box-shadow: none !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Coupon Marquee -->
+    {% if active_coupons %}
+    <div class="coupon-marquee-container">
+        <div class="coupon-marquee">
+            <!-- First set of coupons -->
+            {% for coupon in active_coupons %}
+            <div class="coupon-item" onclick="copyCoupon('{{ coupon.code }}')">
+                <span class="coupon-discount">{{ coupon.discount }}% OFF</span>
+                <i class="bi bi-tag-fill"></i>
+                <span class="coupon-code">{{ coupon.code }}</span>
+                <i class="bi bi-arrow-right ms-2"></i>
+            </div>
+            {% endfor %}
+            <!-- Duplicate set for seamless loop -->
+            {% for coupon in active_coupons %}
+            <div class="coupon-item" onclick="copyCoupon('{{ coupon.code }}')">
+                <span class="coupon-discount">{{ coupon.discount }}% OFF</span>
+                <i class="bi bi-tag-fill"></i>
+                <span class="coupon-code">{{ coupon.code }}</span>
+                <i class="bi bi-arrow-right ms-2"></i>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    <nav class="navbar navbar-expand-lg navbar-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand animate__animated animate__fadeIn" href="{% url 'home' %}">
+                <i class="bi bi-shield-lock-fill"></i> KTVS Enterprise
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'dashboard' %}">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'qr_history' %}">
+                                <i class="bi bi-clock-history"></i> History
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'pricing' %}">
+                                <i class="bi bi-cash-coin"></i> Pricing
+                            </a>
+                        </li>
+                        {% if user.is_superuser %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'admin_dashboard' %}">
+                                <i class="bi bi-gear-fill"></i> Admin
+                            </a>
+                        </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle"></i> {{ user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><span class="dropdown-item-text"><small class="text-muted"><i class="bi bi-envelope me-1"></i>{{ user.email }}</small></span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'subscription_details' %}">
+                                    <i class="bi bi-credit-card me-1"></i> My Subscription
+                                </a></li>
+                                <li><a class="dropdown-item" href="{% url 'change_password' %}">
+                                    <i class="bi bi-key me-1"></i> Change Password
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li class="px-3 pb-2">
+                                    <button type="button" onclick="logoutWithConfirm()" class="logout-btn btn btn-danger btn-sm w-100">
+                                        <i class="bi bi-box-arrow-right me-1"></i> Logout
+                                    </button>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <button type="button" onclick="logoutWithConfirm()" class="btn btn-outline-danger btn-sm ms-2">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">
+                                <i class="bi bi-box-arrow-in-right"></i> Login
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">
+                                <i class="bi bi-person-plus"></i> Register
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hidden Logout Form -->
+    <form id="logoutForm" action="{% url 'logout' %}" method="post" style="display: none;">
+        {% csrf_token %}
+    </form>
+
+    <div class="container my-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show animate__animated animate__fadeInDown auto-dismiss-alert" role="alert">
+                    <i class="bi bi-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-triangle{% else %}info-circle{% endif %}-fill me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer class="footer mt-5">
+        <div class="container">
+            <p class="mb-2">© 2024 KTVS Enterprise - Kelley Token Validation System</p>
+            <small>Secured with AES-256-GCM Encryption | NIST SP 800-63B Compliant</small>
+            <div class="mt-3">
+                <a href="{% url 'terms_of_service' %}" class="text-white text-decoration-none me-3">
+                    <i class="bi bi-shield-check"></i> Terms of Service
+                </a>
+                <a href="{% url 'privacy_policy' %}" class="text-white text-decoration-none me-3">
+                    <i class="bi bi-shield-lock"></i> Privacy Policy
+                </a>
+                <a href="mailto:support@ktvs-enterprise.com" class="text-white text-decoration-none">
+                    <i class="bi bi-envelope"></i> Contact Support
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function logoutWithConfirm() {
+            // Submit the logout form
+            const logoutForm = document.getElementById('logoutForm');
+            // Add a fade-out effect before redirecting
+            document.body.style.opacity = '0';
+            document.body.style.transition = 'opacity 0.3s ease-out';
+            
+            // Submit form after a brief delay
+            setTimeout(() => {
+                logoutForm.submit();
+            }, 300);
+        }
+        
+        // Copy coupon code to clipboard
+        function copyCoupon(code) {
+            navigator.clipboard.writeText(code).then(() => {
+                // Create a temporary notification
+                const notification = document.createElement('div');
+                notification.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 animate__animated animate__fadeInDown';
+                notification.style.zIndex = '9999';
+                notification.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>Coupon <strong>${code}</strong> copied to clipboard!`;
+                document.body.appendChild(notification);
+                
+                // Remove notification after 3 seconds
+                setTimeout(() => {
+                    notification.classList.remove('animate__fadeInDown');
+                    notification.classList.add('animate__fadeOutUp');
+                    setTimeout(() => notification.remove(), 500);
+                }, 3000);
+            }).catch(err => {
+                console.error('Failed to copy coupon:', err);
+            });
+        }
+        
+        // Optional: Add keyboard shortcut (Ctrl+L for logout)
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'l') {
+                event.preventDefault();
+                const logoutBtn = document.querySelector('.logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.click();
+                }
+            }
+        });
+        
+        // Auto-dismiss alerts after 3.5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.auto-dismiss-alert');
+            alerts.forEach(function(alert) {
+                setTimeout(function() {
+                    // Add fade out animation
+                    alert.classList.remove('animate__fadeInDown');
+                    alert.classList.add('animate__fadeOutUp');
+                    
+                    // Remove from DOM after animation completes
+                    setTimeout(function() {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }, 500);
+                }, 3500); // 3.5 seconds
+            });
+        });
+    </script>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

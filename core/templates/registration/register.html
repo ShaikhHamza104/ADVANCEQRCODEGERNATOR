@@ -1,0 +1,449 @@
+{% extends 'base.html' %}
+
+{% block title %}Register{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center animate__animated animate__fadeIn">
+        <div class="col-12 col-sm-11 col-md-10 col-lg-8 col-xl-7 col-xxl-6">
+            <div class="card shadow-lg border-0" style="border-radius: 20px; overflow: hidden;">
+                <div class="card-body p-0">
+                    <!-- Header Section with Gradient -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2rem 1.5rem; text-align: center; color: white;">
+                        <i class="bi bi-person-plus-fill" style="font-size: 3rem; opacity: 0.9;"></i>
+                        <h2 class="mt-2 mb-1 fw-bold h4 h3-md">Create Your Account</h2>
+                        <p class="mb-0 small" style="opacity: 0.9;">Join KTVS Enterprise and secure your tokens</p>
+                    </div>
+
+                    <!-- Form Section -->
+                    <div class="p-3 p-sm-4 p-md-5">
+                    <form method="post" id="registerForm">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger alert-dismissible fade show animate__animated animate__shakeX" role="alert">
+                                <i class="bi bi-exclamation-octagon-fill me-2"></i>
+                                <strong>Registration Error</strong>
+                                {{ form.non_field_errors }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endif %}
+
+                        <!-- Full Name Field -->
+                        <div class="mb-4 position-relative">
+                            <label for="fullName" class="form-label fw-bold mb-2">
+                                <i class="bi bi-person-fill text-primary"></i> Full Name
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text border-0 bg-light">
+                                    <i class="bi bi-person text-primary"></i>
+                                </span>
+                                <input type="text" 
+                                       id="fullName"
+                                       name="full_name" 
+                                       class="form-control form-control-lg border-0 bg-light"
+                                       placeholder="Enter your full name"
+                                       required
+                                       style="border-radius: 0 12px 12px 0;">
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-info-circle"></i> Your name as it will appear in your profile
+                            </small>
+                        </div>
+
+                        <!-- Email Field -->
+                        <div class="mb-4 position-relative">
+                            <label for="email" class="form-label fw-bold mb-2">
+                                <i class="bi bi-envelope-fill text-info"></i> Email Address
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text border-0 bg-light">
+                                    <i class="bi bi-envelope text-info"></i>
+                                </span>
+                                <input type="email" 
+                                       id="email"
+                                       name="email" 
+                                       class="form-control form-control-lg border-0 bg-light"
+                                       placeholder="your.email@example.com"
+                                       required
+                                       style="border-radius: 0 12px 12px 0;">
+                            </div>
+                            <small class="text-muted d-block mt-2">
+                                <i class="bi bi-info-circle"></i> We'll never share your email with anyone else
+                            </small>
+                        </div>
+
+                        <!-- Username Field -->
+                        <div class="mb-4">
+                            <label for="username" class="form-label fw-bold mb-2">
+                                <i class="bi bi-at text-success"></i> Username
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text border-0 bg-light">
+                                    <i class="bi bi-at text-success"></i>
+                                </span>
+                                <input type="text" 
+                                       id="username"
+                                       name="username" 
+                                       class="form-control form-control-lg border-0 bg-light"
+                                       placeholder="Choose your username"
+                                       required
+                                       style="border-radius: 0 12px 12px 0;">
+                            </div>
+                            <div id="usernameValidation" class="mt-2"></div>
+                            {% if form.username.errors %}
+                                <div class="text-danger small mt-2">
+                                    <i class="bi bi-exclamation-triangle"></i> {{ form.username.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Password Field -->
+                        <div class="mb-4">
+                            <label for="password1" class="form-label fw-bold mb-2">
+                                <i class="bi bi-lock-fill text-warning"></i> Password
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text border-0 bg-light">
+                                    <i class="bi bi-lock text-warning"></i>
+                                </span>
+                                <input type="password" 
+                                       id="password1"
+                                       name="password1" 
+                                       class="form-control form-control-lg border-0 bg-light"
+                                       placeholder="Create a strong password"
+                                       required
+                                       style="border-radius: 0 12px 12px 0;">
+                                <button class="btn btn-outline-secondary border-0 bg-light" type="button" id="togglePassword1">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+
+                            <!-- Password Strength Indicator -->
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <small class="fw-bold text-dark">Password Strength:</small>
+                                    <small id="strengthText" class="text-muted">Enter a password</small>
+                                </div>
+                                <div class="progress" style="height: 6px; border-radius: 10px;">
+                                    <div id="strengthBar" class="progress-bar" role="progressbar" style="width: 0%; border-radius: 10px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Password Requirements Checklist -->
+                            <div class="mt-3 p-3" style="background: rgba(0,0,0,0.02); border-radius: 12px;">
+                                <small class="fw-bold d-block mb-2">Requirements:</small>
+                                <div class="requirement-item d-flex align-items-center mb-2">
+                                    <i class="bi bi-circle-fill text-muted requirement-icon" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+                                    <span class="requirement-text">At least 8 characters</span>
+                                </div>
+                                <div class="requirement-item d-flex align-items-center mb-2">
+                                    <i class="bi bi-circle-fill text-muted requirement-icon" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+                                    <span class="requirement-text">One uppercase letter (A-Z)</span>
+                                </div>
+                                <div class="requirement-item d-flex align-items-center mb-2">
+                                    <i class="bi bi-circle-fill text-muted requirement-icon" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+                                    <span class="requirement-text">One lowercase letter (a-z)</span>
+                                </div>
+                                <div class="requirement-item d-flex align-items-center mb-2">
+                                    <i class="bi bi-circle-fill text-muted requirement-icon" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+                                    <span class="requirement-text">One number (0-9)</span>
+                                </div>
+                                <div class="requirement-item d-flex align-items-center">
+                                    <i class="bi bi-circle-fill text-muted requirement-icon" style="font-size: 0.6rem; margin-right: 0.5rem;"></i>
+                                    <span class="requirement-text">One special character (!@#$%^&*)</span>
+                                </div>
+                            </div>
+
+                            {% if form.password1.help_text %}
+                                <small class="form-text text-muted d-block mt-2">
+                                    <i class="bi bi-info-circle"></i> {{ form.password1.help_text|safe }}
+                                </small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password Field -->
+                        <div class="mb-4">
+                            <label for="password2" class="form-label fw-bold mb-2">
+                                <i class="bi bi-lock-fill text-danger"></i> Confirm Password
+                            </label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text border-0 bg-light">
+                                    <i class="bi bi-lock text-danger"></i>
+                                </span>
+                                <input type="password" 
+                                       id="password2"
+                                       name="password2" 
+                                       class="form-control form-control-lg border-0 bg-light"
+                                       placeholder="Re-enter your password"
+                                       required
+                                       style="border-radius: 0 12px 12px 0;">
+                                <button class="btn btn-outline-secondary border-0 bg-light" type="button" id="togglePassword2">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            <div id="passwordMatch" class="mt-2"></div>
+                        </div>
+
+                        <!-- Terms and Privacy Policy Agreement -->
+                        <div class="mb-4 p-3" style="background: rgba(102, 126, 234, 0.05); border-radius: 12px; border: 2px solid rgba(102, 126, 234, 0.2);">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="agreeTerms" name="agree_terms" required 
+                                       style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                                <label class="form-check-label ms-2" for="agreeTerms" style="font-size: 1rem;">
+                                    I have read and agree to the 
+                                    <a href="{% url 'terms_of_service' %}" target="_blank" class="text-primary text-decoration-none fw-bold">
+                                        <i class="bi bi-shield-check"></i> Terms of Service
+                                    </a>
+                                </label>
+                            </div>
+                            
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="agreePrivacy" name="agree_privacy" required 
+                                       style="width: 1.2rem; height: 1.2rem; cursor: pointer;">
+                                <label class="form-check-label ms-2" for="agreePrivacy" style="font-size: 1rem;">
+                                    I have read and agree to the 
+                                    <a href="{% url 'privacy_policy' %}" target="_blank" class="text-success text-decoration-none fw-bold">
+                                        <i class="bi bi-shield-lock"></i> Privacy Policy
+                                    </a>
+                                </label>
+                            </div>
+                            
+                            <div class="mt-3 p-2" style="background: rgba(255, 255, 255, 0.7); border-radius: 8px;">
+                                <small class="text-muted d-block">
+                                    <i class="bi bi-info-circle-fill text-primary"></i> 
+                                    <strong>Required:</strong> You must accept both agreements to create an account. 
+                                    Links open in new tabs for your convenience.
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Auto TOTP Profile Info -->
+                        <div class="alert alert-success border-0 shadow-sm mb-4">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-check-circle-fill fs-5 me-3"></i>
+                                <div>
+                                    <strong>Automatic TOTP Profile</strong>
+                                    <p class="mb-0 small mt-1">A secure TOTP profile will be automatically created for you upon registration with AES-256-GCM encryption!</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mb-3">
+                            <button type="submit" class="btn btn-lg fw-bold" id="submitBtn"
+                                    style="background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%); border: none; color: white; padding: 1rem; border-radius: 12px; transition: all 0.3s ease;"
+                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 25px rgba(86, 171, 47, 0.4)';"
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                <i class="bi bi-person-plus me-2"></i> Create My Account
+                            </button>
+                        </div>
+
+                        <!-- Login Link -->
+                        <div class="text-center">
+                            <p class="mb-0 text-muted">Already have an account? 
+                                <a href="{% url 'login' %}" class="text-primary text-decoration-none fw-bold">
+                                    Login here <i class="bi bi-arrow-right"></i>
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Section -->
+        <div class="row mt-5 g-3">
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded-3" style="background: rgba(102, 126, 234, 0.1);">
+                    <i class="bi bi-shield-lock fs-3 text-primary"></i>
+                    <h6 class="mt-3 fw-bold">Enterprise Security</h6>
+                    <small class="text-muted">AES-256-GCM encryption</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded-3" style="background: rgba(0, 180, 219, 0.1);">
+                    <i class="bi bi-qr-code fs-3 text-info"></i>
+                    <h6 class="mt-3 fw-bold">Auto QR Code</h6>
+                    <small class="text-muted">Instant setup ready</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center p-3 rounded-3" style="background: rgba(220, 53, 69, 0.1);">
+                    <i class="bi bi-clock-history fs-3 text-danger"></i>
+                    <h6 class="mt-3 fw-bold">Audit Trail</h6>
+                    <small class="text-muted">Complete activity log</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .requirement-item {
+        transition: all 0.3s ease;
+    }
+
+    .requirement-item.met {
+        color: #198754;
+    }
+
+    .requirement-item.met .requirement-icon {
+        color: #198754 !important;
+    }
+
+    .form-control:focus {
+        border-color: #667eea !important;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+
+    .input-group-text {
+        color: #667eea;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const password1Input = document.getElementById('password1');
+    const password2Input = document.getElementById('password2');
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    const submitBtn = document.getElementById('submitBtn');
+    const togglePassword1 = document.getElementById('togglePassword1');
+    const togglePassword2 = document.getElementById('togglePassword2');
+    const passwordMatchDiv = document.getElementById('passwordMatch');
+    const form = document.getElementById('registerForm');
+
+    // Password visibility toggle
+    togglePassword1.addEventListener('click', function() {
+        const type = password1Input.getAttribute('type') === 'password' ? 'text' : 'password';
+        password1Input.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+    });
+
+    togglePassword2.addEventListener('click', function() {
+        const type = password2Input.getAttribute('type') === 'password' ? 'text' : 'password';
+        password2Input.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+    });
+
+    // Password strength checker
+    function checkPasswordStrength(password) {
+        let strength = 0;
+        const requirements = {
+            length: password.length >= 8,
+            uppercase: /[A-Z]/.test(password),
+            lowercase: /[a-z]/.test(password),
+            number: /[0-9]/.test(password),
+            special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+        };
+
+        Object.values(requirements).forEach(req => {
+            if (req) strength++;
+        });
+
+        // Update requirement checklist
+        document.querySelectorAll('.requirement-item').forEach((item, index) => {
+            const reqTexts = [
+                'At least 8 characters',
+                'One uppercase letter (A-Z)',
+                'One lowercase letter (a-z)',
+                'One number (0-9)',
+                'One special character (!@#$%^&*)'
+            ];
+            
+            const reqArray = [
+                requirements.length,
+                requirements.uppercase,
+                requirements.lowercase,
+                requirements.number,
+                requirements.special
+            ];
+
+            if (reqArray[index]) {
+                item.classList.add('met');
+            } else {
+                item.classList.remove('met');
+            }
+        });
+
+        return { strength, requirements };
+    }
+
+    // Update strength indicator
+    password1Input.addEventListener('input', function() {
+        const result = checkPasswordStrength(this.value);
+        const strength = result.strength;
+        
+        strengthBar.style.width = (strength * 20) + '%';
+        
+        if (strength === 0) {
+            strengthBar.className = 'progress-bar';
+            strengthText.textContent = 'Enter a password';
+            strengthText.className = 'text-muted';
+        } else if (strength < 3) {
+            strengthBar.className = 'progress-bar bg-danger';
+            strengthText.textContent = 'Weak';
+            strengthText.className = 'text-danger fw-bold';
+        } else if (strength < 5) {
+            strengthBar.className = 'progress-bar bg-warning';
+            strengthText.textContent = 'Good';
+            strengthText.className = 'text-warning fw-bold';
+        } else {
+            strengthBar.className = 'progress-bar bg-success';
+            strengthText.textContent = 'Strong';
+            strengthText.className = 'text-success fw-bold';
+        }
+
+        checkPasswords();
+    });
+
+    // Check password match
+    function checkPasswords() {
+        const password1 = password1Input.value;
+        const password2 = password2Input.value;
+
+        if (password2.length === 0) {
+            passwordMatchDiv.innerHTML = '';
+            return;
+        }
+
+        if (password1 === password2) {
+            passwordMatchDiv.innerHTML = '<small class="text-success fw-bold"><i class="bi bi-check-circle-fill"></i> Passwords match!</small>';
+        } else {
+            passwordMatchDiv.innerHTML = '<small class="text-danger fw-bold"><i class="bi bi-x-circle-fill"></i> Passwords do not match</small>';
+        }
+    }
+
+    password1Input.addEventListener('input', checkPasswords);
+    password2Input.addEventListener('input', checkPasswords);
+
+    // Form validation
+    form.addEventListener('submit', function(e) {
+        const password1 = password1Input.value;
+        const password2 = password2Input.value;
+        const result = checkPasswordStrength(password1);
+
+        if (result.strength < 5) {
+            e.preventDefault();
+            alert('Password does not meet all requirements. Please ensure it has uppercase, lowercase, numbers, and special characters.');
+            return false;
+        }
+
+        if (password1 !== password2) {
+            e.preventDefault();
+            alert('Passwords do not match. Please re-enter.');
+            return false;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating Account...';
+    });
+});
+</script>
+{% endblock %}

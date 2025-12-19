@@ -1,0 +1,623 @@
+{% extends 'base.html' %}
+
+{% block title %}Two-Factor Authentication{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-3 px-md-4">
+    <div class="row justify-content-center animate__animated animate__fadeIn">
+        <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
+            <div class="card verify-2fa-card">
+                <div class="card-body p-3 p-sm-4 p-md-5">
+                    <!-- Security Badge -->
+                    <div class="security-badge text-center mb-3">
+                        <span class="badge bg-success px-3 py-2">
+                            <i class="bi bi-shield-check me-1"></i> Secure Connection
+                        </span>
+                    </div>
+                    
+                    <!-- Header -->
+                    <div class="text-center mb-4">
+                        <div class="shield-icon-container mb-3">
+                            <i class="bi bi-shield-lock-fill shield-icon"></i>
+                            <div class="pulse-ring"></div>
+                        </div>
+                        <h2 class="h4 h3-md mt-3 fw-bold">Two-Factor Authentication</h2>
+                        <p class="text-muted small mb-0">Enter the 6-digit code from your authenticator app</p>
+                    </div>
+                    
+                    <!-- Timer Countdown -->
+                    <div class="timer-container text-center mb-4">
+                        <div class="timer-circle">
+                            <svg class="timer-svg" viewBox="0 0 36 36">
+                                <path class="timer-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <path class="timer-progress" id="timerProgress" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                            </svg>
+                            <span class="timer-text" id="timerText">30</span>
+                        </div>
+                        <small class="text-muted d-block mt-2">Code expires in <span id="timerLabel">30</span>s</small>
+                    </div>
+                    
+                    <form method="post" id="verify2faForm">
+                        {% csrf_token %}
+                        
+                        <!-- Individual Digit Input Boxes -->
+                        <div class="mb-4">
+                            <label class="form-label text-center d-block fw-semibold mb-3">
+                                <i class="bi bi-key-fill text-primary"></i> Authentication Code
+                            </label>
+                            <div class="otp-input-container d-flex justify-content-center gap-2 gap-sm-3">
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="0">
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="1">
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="2">
+                                <span class="otp-separator d-none d-sm-flex">-</span>
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="3">
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="4">
+                                <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="off" data-index="5">
+                            </div>
+                            <!-- Hidden input to hold the full code -->
+                            <input type="hidden" name="totp_code" id="totp_code">
+                            <small class="text-muted d-block text-center mt-3">
+                                <i class="bi bi-info-circle"></i> Compatible with Google Authenticator, Microsoft Authenticator, Authy
+                            </small>
+                        </div>
+                        
+                        <!-- Error/Success Messages -->
+                        {% if messages %}
+                        <div class="messages-container mb-3">
+                            {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show py-2" role="alert">
+                                <small>{{ message }}</small>
+                                <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg verify-btn" id="verifyBtn" disabled>
+                                <span class="btn-text">
+                                    <i class="bi bi-check-circle-fill me-2"></i>Verify & Continue
+                                </span>
+                                <span class="btn-loading d-none">
+                                    <span class="spinner-border spinner-border-sm me-2"></span>Verifying...
+                                </span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Attempt Counter (Security Feature) -->
+                    <div class="attempt-info text-center mt-3 mb-2">
+                        <small class="text-muted">
+                            <i class="bi bi-shield-exclamation"></i> 
+                            <span id="attemptInfo">Multiple failed attempts will lock your account</span>
+                        </small>
+                    </div>
+                    
+                    <!-- Divider -->
+                    <hr class="my-4">
+                    
+                    <!-- Recovery Link -->
+                    <div class="text-center">
+                        <a href="{% url 'account_recovery' %}" class="text-decoration-none recovery-link">
+                            <i class="bi bi-question-circle me-1"></i> Lost access to authenticator?
+                        </a>
+                    </div>
+                    
+                    <!-- Info Cards -->
+                    <div class="info-cards mt-4">
+                        <div class="alert alert-info py-2 px-3 mb-2">
+                            <small class="d-flex align-items-start">
+                                <i class="bi bi-lightbulb-fill me-2 mt-1 flex-shrink-0"></i>
+                                <span><strong>Tip:</strong> Your code refreshes every 30 seconds. Enter the current code.</span>
+                            </small>
+                        </div>
+                        
+                        <div class="alert alert-warning py-2 px-3 mb-0">
+                            <small class="d-flex align-items-start">
+                                <i class="bi bi-exclamation-triangle me-2 mt-1 flex-shrink-0"></i>
+                                <span><strong>Security:</strong> Never share your 2FA code with anyone.</span>
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Session Security Info -->
+                    <div class="session-info text-center mt-4">
+                        <small class="text-muted">
+                            <i class="bi bi-clock-history me-1"></i>
+                            Session expires in <span id="sessionTimer">5:00</span>
+                        </small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Back to Login -->
+            <div class="text-center mt-3 mb-4">
+                <a href="{% url 'login' %}" class="btn btn-outline-light btn-sm">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Login
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ========== RESPONSIVE 2FA STYLES ========== */
+
+/* Card Styling */
+.verify-2fa-card {
+    border: none;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+/* Shield Icon Animation */
+.shield-icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.shield-icon {
+    font-size: 3rem;
+    color: var(--success-color);
+    position: relative;
+    z-index: 2;
+}
+
+@media (min-width: 576px) {
+    .shield-icon {
+        font-size: 4rem;
+    }
+}
+
+.pulse-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border: 3px solid var(--success-color);
+    border-radius: 50%;
+    animation: pulse 2s ease-out infinite;
+    z-index: 1;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1.5);
+        opacity: 0;
+    }
+}
+
+/* Timer Styling */
+.timer-container {
+    margin-bottom: 1.5rem;
+}
+
+.timer-circle {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    margin: 0 auto;
+}
+
+@media (min-width: 576px) {
+    .timer-circle {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+.timer-svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+}
+
+.timer-bg {
+    fill: none;
+    stroke: #e9ecef;
+    stroke-width: 3;
+}
+
+.timer-progress {
+    fill: none;
+    stroke: var(--success-color);
+    stroke-width: 3;
+    stroke-linecap: round;
+    transition: stroke-dasharray 1s linear;
+}
+
+.timer-progress.warning {
+    stroke: #ffc107;
+}
+
+.timer-progress.danger {
+    stroke: #dc3545;
+}
+
+.timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--success-color);
+}
+
+.timer-text.warning {
+    color: #ffc107;
+}
+
+.timer-text.danger {
+    color: #dc3545;
+}
+
+/* OTP Input Boxes */
+.otp-input-container {
+    flex-wrap: nowrap;
+}
+
+.otp-input {
+    width: 42px;
+    height: 52px;
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+    background: #f8f9fa;
+}
+
+@media (min-width: 576px) {
+    .otp-input {
+        width: 50px;
+        height: 60px;
+        font-size: 1.75rem;
+        border-radius: 12px;
+    }
+}
+
+@media (min-width: 768px) {
+    .otp-input {
+        width: 55px;
+        height: 65px;
+        font-size: 2rem;
+    }
+}
+
+.otp-input:focus {
+    outline: none;
+    border-color: var(--success-color);
+    background: white;
+    box-shadow: 0 0 0 3px rgba(25, 135, 84, 0.2);
+    transform: scale(1.05);
+}
+
+.otp-input.filled {
+    border-color: var(--success-color);
+    background: white;
+}
+
+.otp-input.error {
+    border-color: #dc3545;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.otp-separator {
+    align-items: center;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+/* Verify Button */
+.verify-btn {
+    border-radius: 12px;
+    padding: 0.8rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.verify-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.verify-btn:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(25, 135, 84, 0.4);
+}
+
+/* Recovery Link */
+.recovery-link {
+    color: #6c757d;
+    transition: color 0.2s ease;
+}
+
+.recovery-link:hover {
+    color: var(--primary-color);
+}
+
+/* Info Cards */
+.info-cards .alert {
+    border-radius: 10px;
+    border: none;
+}
+
+/* Session Info */
+.session-info {
+    padding-top: 0.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Security Badge */
+.security-badge .badge {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 375px) {
+    .otp-input {
+        width: 38px;
+        height: 48px;
+        font-size: 1.25rem;
+    }
+    
+    .otp-input-container {
+        gap: 0.25rem !important;
+    }
+    
+    .card-body {
+        padding: 1.25rem !important;
+    }
+    
+    .shield-icon {
+        font-size: 2.5rem;
+    }
+    
+    .pulse-ring {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+/* iPad/Tablet adjustments */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .verify-2fa-card {
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .otp-input {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: white;
+    }
+    
+    .otp-input:focus {
+        background: #1a202c;
+    }
+}
+
+/* Landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+    .shield-icon {
+        font-size: 2rem;
+    }
+    
+    .pulse-ring {
+        display: none;
+    }
+    
+    .timer-circle {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .info-cards {
+        display: none;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const otpInputs = document.querySelectorAll('.otp-input');
+    const hiddenInput = document.getElementById('totp_code');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const form = document.getElementById('verify2faForm');
+    const timerProgress = document.getElementById('timerProgress');
+    const timerText = document.getElementById('timerText');
+    const timerLabel = document.getElementById('timerLabel');
+    
+    // Focus first input
+    otpInputs[0].focus();
+    
+    // Update hidden input with combined value
+    function updateHiddenInput() {
+        let code = '';
+        otpInputs.forEach(input => {
+            code += input.value;
+        });
+        hiddenInput.value = code;
+        
+        // Enable/disable submit button
+        verifyBtn.disabled = code.length !== 6;
+        
+        return code;
+    }
+    
+    // Handle input on each OTP box
+    otpInputs.forEach((input, index) => {
+        // Only allow numbers
+        input.addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            if (this.value.length === 1) {
+                this.classList.add('filled');
+                // Move to next input
+                if (index < otpInputs.length - 1) {
+                    otpInputs[index + 1].focus();
+                }
+            }
+            
+            const code = updateHiddenInput();
+            
+            // Auto-submit when all 6 digits entered
+            if (code.length === 6) {
+                submitForm();
+            }
+        });
+        
+        // Handle backspace
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Backspace') {
+                if (this.value === '' && index > 0) {
+                    otpInputs[index - 1].focus();
+                    otpInputs[index - 1].value = '';
+                    otpInputs[index - 1].classList.remove('filled');
+                } else {
+                    this.classList.remove('filled');
+                }
+                updateHiddenInput();
+            }
+            
+            // Handle arrow keys
+            if (e.key === 'ArrowLeft' && index > 0) {
+                otpInputs[index - 1].focus();
+            }
+            if (e.key === 'ArrowRight' && index < otpInputs.length - 1) {
+                otpInputs[index + 1].focus();
+            }
+        });
+        
+        // Handle paste
+        input.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const pasteData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+            
+            pasteData.split('').forEach((char, i) => {
+                if (otpInputs[i]) {
+                    otpInputs[i].value = char;
+                    otpInputs[i].classList.add('filled');
+                }
+            });
+            
+            const code = updateHiddenInput();
+            
+            if (code.length === 6) {
+                submitForm();
+            } else if (pasteData.length > 0) {
+                otpInputs[Math.min(pasteData.length, 5)].focus();
+            }
+        });
+        
+        // Select all on focus
+        input.addEventListener('focus', function() {
+            this.select();
+        });
+    });
+    
+    // Submit form with loading state
+    function submitForm() {
+        verifyBtn.querySelector('.btn-text').classList.add('d-none');
+        verifyBtn.querySelector('.btn-loading').classList.remove('d-none');
+        verifyBtn.disabled = true;
+        
+        // Small delay for visual feedback
+        setTimeout(() => {
+            form.submit();
+        }, 300);
+    }
+    
+    // Timer countdown (30 second TOTP cycle)
+    let timeLeft = 30 - (Math.floor(Date.now() / 1000) % 30);
+    
+    function updateTimer() {
+        const progress = (timeLeft / 30) * 100;
+        timerProgress.style.strokeDasharray = `${progress}, 100`;
+        timerText.textContent = timeLeft;
+        timerLabel.textContent = timeLeft;
+        
+        // Color changes based on time left
+        timerProgress.classList.remove('warning', 'danger');
+        timerText.classList.remove('warning', 'danger');
+        
+        if (timeLeft <= 5) {
+            timerProgress.classList.add('danger');
+            timerText.classList.add('danger');
+        } else if (timeLeft <= 10) {
+            timerProgress.classList.add('warning');
+            timerText.classList.add('warning');
+        }
+        
+        timeLeft--;
+        
+        if (timeLeft < 0) {
+            timeLeft = 30;
+        }
+    }
+    
+    updateTimer();
+    setInterval(updateTimer, 1000);
+    
+    // Session timer (5 minutes)
+    let sessionTimeLeft = 5 * 60; // 5 minutes in seconds
+    const sessionTimer = document.getElementById('sessionTimer');
+    
+    function updateSessionTimer() {
+        const minutes = Math.floor(sessionTimeLeft / 60);
+        const seconds = sessionTimeLeft % 60;
+        sessionTimer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        
+        if (sessionTimeLeft <= 60) {
+            sessionTimer.style.color = '#dc3545';
+            sessionTimer.style.fontWeight = 'bold';
+        }
+        
+        sessionTimeLeft--;
+        
+        if (sessionTimeLeft < 0) {
+            // Session expired - redirect to login
+            window.location.href = '{% url "login" %}?expired=1';
+        }
+    }
+    
+    updateSessionTimer();
+    setInterval(updateSessionTimer, 1000);
+    
+    // Handle form submit
+    form.addEventListener('submit', function(e) {
+        if (hiddenInput.value.length !== 6) {
+            e.preventDefault();
+            otpInputs.forEach(input => input.classList.add('error'));
+            setTimeout(() => {
+                otpInputs.forEach(input => input.classList.remove('error'));
+            }, 500);
+        } else {
+            verifyBtn.querySelector('.btn-text').classList.add('d-none');
+            verifyBtn.querySelector('.btn-loading').classList.remove('d-none');
+        }
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}

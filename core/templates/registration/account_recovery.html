@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Recovery{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center animate__animated animate__fadeIn">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0"><i class="bi bi-life-preserver"></i> Account Recovery Request</h4>
+            </div>
+            <div class="card-body p-5">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Lost access to your authenticator app?</strong><br>
+                    Submit a recovery request and our administrator will help you regain access to your account.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person-fill"></i> Username
+                        </label>
+                        <input type="text" 
+                               name="username" 
+                               id="username" 
+                               class="form-control form-control-lg" 
+                               placeholder="Enter your username"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope-fill"></i> Email Address
+                        </label>
+                        <input type="email" 
+                               name="email" 
+                               id="email" 
+                               class="form-control form-control-lg" 
+                               placeholder="your.email@example.com"
+                               required>
+                        <small class="text-muted">Must match the email registered with your account</small>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="reason" class="form-label">
+                            <i class="bi bi-chat-left-text"></i> Reason for Recovery (Optional)
+                        </label>
+                        <textarea name="reason" 
+                                  id="reason" 
+                                  class="form-control" 
+                                  rows="4" 
+                                  placeholder="e.g., Lost phone, Changed device, Uninstalled authenticator app..."></textarea>
+                        <small class="text-muted">Help us process your request faster by providing details</small>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg text-dark">
+                            <i class="bi bi-send-fill"></i> Submit Recovery Request
+                        </button>
+                        <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Login
+                        </a>
+                    </div>
+                </form>
+
+                <div class="alert alert-warning mt-4">
+                    <h6><i class="bi bi-clock-history"></i> What happens next?</h6>
+                    <ol class="mb-0 small">
+                        <li>Your request will be sent to the administrator</li>
+                        <li>Admin will verify your identity</li>
+                        <li>Your 2FA will be reset</li>
+                        <li>You'll receive an email with instructions to set up a new QR code</li>
+                    </ol>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0">
+                    <small>
+                        <i class="bi bi-shield-check"></i>
+                        <strong>Security Note:</strong> This process requires administrator approval to protect your account security.
+                        Recovery requests are logged and monitored for security purposes.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

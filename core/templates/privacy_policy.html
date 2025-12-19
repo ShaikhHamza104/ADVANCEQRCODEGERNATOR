@@ -1,0 +1,463 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy{% endblock %}
+
+{% block extra_css %}
+<style>
+    .legal-document {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        padding: 3rem;
+        box-shadow: 0 15px 50px rgba(0,0,0,0.2);
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+    
+    .legal-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 3px solid #56ab2f;
+    }
+    
+    .legal-header h1 {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    
+    .legal-date {
+        color: #6c757d;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    
+    .legal-section {
+        margin-bottom: 2.5rem;
+    }
+    
+    .legal-section h2 {
+        color: #56ab2f;
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        padding-left: 1rem;
+        border-left: 4px solid #a8e063;
+    }
+    
+    .legal-section h3 {
+        color: #495057;
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+    
+    .legal-section p {
+        color: #212529;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        margin-bottom: 1rem;
+        text-align: justify;
+    }
+    
+    .legal-section ul, .legal-section ol {
+        margin-left: 2rem;
+        margin-bottom: 1rem;
+    }
+    
+    .legal-section li {
+        color: #212529;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        margin-bottom: 0.5rem;
+    }
+    
+    .highlight-box {
+        background: linear-gradient(135deg, rgba(86, 171, 47, 0.1) 0%, rgba(168, 224, 99, 0.1) 100%);
+        border-left: 4px solid #56ab2f;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin: 1.5rem 0;
+    }
+    
+    .highlight-box strong {
+        color: #56ab2f;
+    }
+    
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+    }
+    
+    .data-table th {
+        background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+        color: white;
+        padding: 1rem;
+        text-align: left;
+        font-weight: 600;
+    }
+    
+    .data-table td {
+        padding: 1rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .data-table tr:hover {
+        background-color: rgba(86, 171, 47, 0.05);
+    }
+    
+    .rights-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin: 2rem 0;
+    }
+    
+    .rights-box h3 {
+        color: white !important;
+        margin-bottom: 1rem;
+    }
+    
+    .rights-box ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .rights-box li {
+        padding: 0.5rem 0;
+        color: white;
+    }
+    
+    .rights-box li i {
+        color: #a8e063;
+        margin-right: 0.5rem;
+    }
+    
+    .contact-box {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-top: 3rem;
+    }
+    
+    .contact-box h3 {
+        color: white !important;
+        margin-bottom: 1rem;
+    }
+    
+    .contact-box a {
+        color: white;
+        text-decoration: underline;
+        font-weight: 600;
+    }
+    
+    .back-btn {
+        margin-bottom: 2rem;
+    }
+    
+    @media print {
+        .back-btn, .navbar, .footer, .coupon-marquee-container {
+            display: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="animate__animated animate__fadeIn">
+    <div class="back-btn">
+        <a href="{% url 'register' %}" class="btn btn-outline-success">
+            <i class="bi bi-arrow-left"></i> Back to Registration
+        </a>
+    </div>
+
+    <div class="legal-document">
+        <div class="legal-header">
+            <h1><i class="bi bi-shield-lock-fill"></i> Privacy Policy</h1>
+            <p class="legal-date">Last Updated: December 14, 2025</p>
+            <p class="legal-date">Effective Date: December 14, 2025</p>
+        </div>
+
+        <div class="legal-section">
+            <h2>1. Introduction</h2>
+            <p>
+                At <strong>KTVS (Kelley Token Validation System) Enterprise</strong>, we take your privacy seriously. 
+                This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you 
+                use our TOTP QR code generation and management service.
+            </p>
+            <div class="highlight-box">
+                <p><strong>Your Privacy Matters:</strong> We are committed to protecting your personal information 
+                and being transparent about our data practices. This policy helps you understand your privacy rights 
+                and how the law protects you.</p>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2>2. Information We Collect</h2>
+            
+            <h3>2.1 Information You Provide</h3>
+            <p>When you register and use our Service, we collect:</p>
+            
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Data Type</th>
+                        <th>Examples</th>
+                        <th>Purpose</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Account Information</strong></td>
+                        <td>Username, email address, password (hashed)</td>
+                        <td>Account creation and authentication</td>
+                    </tr>
+                    <tr>
+                        <td><strong>TOTP Profile Data</strong></td>
+                        <td>TOTP seeds (encrypted), labels, metadata</td>
+                        <td>Service functionality and QR generation</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Billing Information</strong></td>
+                        <td>Payment method, billing address</td>
+                        <td>Subscription management (processed by payment provider)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Profile Settings</strong></td>
+                        <td>Preferences, notification settings</td>
+                        <td>Service customization</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h3>2.2 Automatically Collected Information</h3>
+            <ul>
+                <li><strong>Usage Data:</strong> API calls, features used, QR codes generated</li>
+                <li><strong>Device Information:</strong> Browser type, operating system, device identifiers</li>
+                <li><strong>Log Data:</strong> IP address, access times, pages viewed, user agent</li>
+                <li><strong>Cookies:</strong> Session cookies for authentication and functionality</li>
+                <li><strong>Audit Logs:</strong> Security events, access logs, changes to TOTP profiles</li>
+            </ul>
+
+            <h3>2.3 Information We Do NOT Collect</h3>
+            <div class="highlight-box">
+                <p><strong>We Do NOT collect:</strong></p>
+                <ul>
+                    <li>Unencrypted TOTP seeds (always encrypted with AES-256-GCM)</li>
+                    <li>Plain-text passwords (always hashed with strong algorithms)</li>
+                    <li>Sensitive financial data (handled by payment processors)</li>
+                    <li>Biometric data</li>
+                    <li>Data from third-party authenticator apps</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h2>3. How We Use Your Information</h2>
+            
+            <p>We use collected information for:</p>
+            
+            <ol>
+                <li><strong>Service Provision:</strong> Creating and managing your TOTP profiles and QR codes</li>
+                <li><strong>Authentication:</strong> Verifying your identity and securing your account</li>
+                <li><strong>Billing:</strong> Processing payments and managing subscriptions</li>
+                <li><strong>Communication:</strong> Sending service updates, security alerts, and support responses</li>
+                <li><strong>Security:</strong> Detecting fraud, preventing abuse, and conducting security audits</li>
+                <li><strong>Improvements:</strong> Analyzing usage patterns to enhance our Service</li>
+                <li><strong>Compliance:</strong> Meeting legal obligations and enforcing our Terms</li>
+                <li><strong>Support:</strong> Providing customer service and technical assistance</li>
+            </ol>
+        </div>
+
+        <div class="legal-section">
+            <h2>4. Data Storage and Security</h2>
+            
+            <h3>4.1 Encryption</h3>
+            <p>We implement multiple layers of encryption:</p>
+            <ul>
+                <li><strong>In Transit:</strong> All data transmitted using HTTPS/TLS 1.3</li>
+                <li><strong>At Rest:</strong> Database encryption for sensitive data</li>
+                <li><strong>TOTP Seeds:</strong> AES-256-GCM encryption with unique keys</li>
+                <li><strong>Passwords:</strong> Hashed using Django's PBKDF2 algorithm</li>
+            </ul>
+
+            <h3>4.2 Access Controls</h3>
+            <ul>
+                <li>Role-based access control (RBAC)</li>
+                <li>Multi-factor authentication for admin accounts</li>
+                <li>Regular security audits and penetration testing</li>
+                <li>Principle of least privilege for system access</li>
+            </ul>
+
+            <h3>4.3 Data Retention</h3>
+            <p>We retain your data:</p>
+            <ul>
+                <li><strong>Active Accounts:</strong> While your account is active</li>
+                <li><strong>Deleted Accounts:</strong> 30 days after deletion (for recovery)</li>
+                <li><strong>Audit Logs:</strong> 90 days for security purposes</li>
+                <li><strong>Billing Records:</strong> As required by law (typically 7 years)</li>
+            </ul>
+
+            <h3>4.4 Compliance Standards</h3>
+            <p>Our security measures comply with:</p>
+            <ul>
+                <li>NIST SP 800-63B (Digital Identity Guidelines)</li>
+                <li>OWASP Top 10 Security Standards</li>
+                <li>GDPR (General Data Protection Regulation)</li>
+                <li>CCPA (California Consumer Privacy Act)</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2>5. Information Sharing and Disclosure</h2>
+            
+            <h3>5.1 We Do NOT Sell Your Data</h3>
+            <div class="highlight-box">
+                <p><strong>Important:</strong> We do NOT sell, rent, or trade your personal information to third parties 
+                for marketing purposes. Your data is yours.</p>
+            </div>
+
+            <h3>5.2 Limited Sharing</h3>
+            <p>We may share information only in these specific circumstances:</p>
+            <ul>
+                <li><strong>Service Providers:</strong> Payment processors (Stripe, PayPal), hosting providers (with strict data processing agreements)</li>
+                <li><strong>Legal Compliance:</strong> When required by law, court order, or government request</li>
+                <li><strong>Security:</strong> To prevent fraud, protect our rights, or ensure safety</li>
+                <li><strong>Business Transfers:</strong> In case of merger, acquisition, or sale (with notification to users)</li>
+                <li><strong>With Your Consent:</strong> When you explicitly authorize sharing</li>
+            </ul>
+
+            <h3>5.3 Third-Party Services</h3>
+            <p>We use the following third-party services:</p>
+            <ul>
+                <li><strong>MongoDB Atlas:</strong> Database hosting (encrypted)</li>
+                <li><strong>Payment Processors:</strong> Stripe/PayPal for billing (PCI-DSS compliant)</li>
+                <li><strong>Email Services:</strong> For transactional emails only</li>
+                <li><strong>Analytics:</strong> Anonymized usage statistics (opt-out available)</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2>6. Cookies and Tracking</h2>
+            
+            <h3>6.1 Types of Cookies</h3>
+            <ul>
+                <li><strong>Essential Cookies:</strong> Required for authentication and security (cannot be disabled)</li>
+                <li><strong>Functional Cookies:</strong> Remember your preferences and settings</li>
+                <li><strong>Analytics Cookies:</strong> Help us understand usage patterns (can be disabled)</li>
+            </ul>
+
+            <h3>6.2 Cookie Management</h3>
+            <p>You can control cookies through your browser settings. Note that disabling essential cookies may limit Service functionality.</p>
+        </div>
+
+        <div class="rights-box">
+            <h3><i class="bi bi-award-fill"></i> Your Privacy Rights</h3>
+            <p><strong>You have the right to:</strong></p>
+            <ul>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Access:</strong> Request a copy of your personal data</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Rectification:</strong> Correct inaccurate or incomplete data</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Deletion:</strong> Request deletion of your data ("right to be forgotten")</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Portability:</strong> Export your data in a machine-readable format</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Restriction:</strong> Limit how we process your data</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Object:</strong> Object to certain types of processing</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Withdraw Consent:</strong> Revoke consent at any time</li>
+                <li><i class="bi bi-check-circle-fill"></i> <strong>Lodge Complaint:</strong> File a complaint with a supervisory authority</li>
+            </ul>
+            <p class="mt-3"><strong>To exercise these rights, contact us at:</strong> privacy@ktvs-enterprise.com</p>
+        </div>
+
+        <div class="legal-section">
+            <h2>8. Children's Privacy</h2>
+            <p>
+                Our Service is not intended for children under 18. We do not knowingly collect personal information 
+                from children. If you believe we have collected data from a child, please contact us immediately, 
+                and we will delete it.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>9. International Data Transfers</h2>
+            <p>
+                Your information may be transferred to and maintained on servers located outside your country. 
+                We ensure appropriate safeguards are in place, including:
+            </p>
+            <ul>
+                <li>Standard Contractual Clauses (SCCs)</li>
+                <li>Data Processing Agreements with vendors</li>
+                <li>Privacy Shield compliance (where applicable)</li>
+            </ul>
+        </div>
+
+        <div class="legal-section">
+            <h2>10. Data Breach Notification</h2>
+            <p>
+                In the unlikely event of a data breach affecting your personal information, we will:
+            </p>
+            <ol>
+                <li>Investigate and contain the breach immediately</li>
+                <li>Notify affected users within 72 hours</li>
+                <li>Report to relevant authorities as required by law</li>
+                <li>Provide guidance on protective measures</li>
+                <li>Conduct a post-incident review and implement improvements</li>
+            </ol>
+        </div>
+
+        <div class="legal-section">
+            <h2>11. Changes to This Privacy Policy</h2>
+            <p>
+                We may update this Privacy Policy periodically. We will notify you of material changes via:
+            </p>
+            <ul>
+                <li>Email notification to your registered address</li>
+                <li>Prominent notice on our website</li>
+                <li>In-app notification</li>
+            </ul>
+            <p>
+                Your continued use of the Service after changes constitutes acceptance. We encourage you to 
+                review this policy regularly.
+            </p>
+        </div>
+
+        <div class="legal-section">
+            <h2>12. How to Delete Your Account</h2>
+            <p>You can delete your account at any time:</p>
+            <ol>
+                <li>Log in to your account</li>
+                <li>Go to Account Settings</li>
+                <li>Click "Delete Account"</li>
+                <li>Confirm deletion</li>
+            </ol>
+            <p>
+                Account deletion is permanent after 30 days. All TOTP profiles, QR codes, and associated data 
+                will be permanently deleted. Billing records are retained as required by law.
+            </p>
+        </div>
+
+        <div class="contact-box">
+            <h3><i class="bi bi-shield-fill-exclamation"></i> Privacy Questions or Concerns?</h3>
+            <p>If you have questions about this Privacy Policy or our data practices, please contact our Data Protection Officer:</p>
+            <p>
+                <strong>Email:</strong> <a href="mailto:privacy@ktvs-enterprise.com">privacy@ktvs-enterprise.com</a><br>
+                <strong>Data Protection Officer:</strong> <a href="mailto:dpo@ktvs-enterprise.com">dpo@ktvs-enterprise.com</a><br>
+                <strong>Support:</strong> <a href="mailto:support@ktvs-enterprise.com">support@ktvs-enterprise.com</a>
+            </p>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{% url 'register' %}" class="btn btn-success btn-lg">
+                <i class="bi bi-check-circle"></i> I Understand - Proceed to Registration
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="animate__animated animate__fadeIn">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-white mb-3">
+                <i class="bi bi-gear-fill"></i> Admin Dashboard
+            </h1>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card animate__animated animate__fadeInLeft">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ total_users }}</h3>
+                        <p class="text-muted mb-0">Total Users</p>
+                    </div>
+                    <i class="bi bi-people-fill stat-icon text-primary"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card animate__animated animate__fadeInUp" style="animation-delay: 0.1s;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ profiles|length }}</h3>
+                        <p class="text-muted mb-0">TOTP Profiles</p>
+                    </div>
+                    <i class="bi bi-shield-check stat-icon text-success"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h3 class="mb-0">{{ total_logs }}</h3>
+                        <p class="text-muted mb-0">Audit Logs</p>
+                    </div>
+                    <i class="bi bi-journal-text stat-icon text-info"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.3s;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-tools"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'create_profile' %}" class="btn btn-success me-2">
+                        <i class="bi bi-plus-circle"></i> Create New Profile
+                    </a>
+                    <a href="{% url 'user_management' %}" class="btn btn-info me-2">
+                        <i class="bi bi-people-fill"></i> Manage Users
+                    </a>
+                    <a href="{% url 'audit_logs' %}" class="btn btn-warning me-2">
+                        <i class="bi bi-journal-text"></i> View All Audit Logs
+                    </a>
+                    <a href="/admin/" class="btn btn-primary me-2">
+                        <i class="bi bi-gear"></i> Django Admin
+                    </a>
+                    <button class="btn btn-secondary" onclick="location.reload()">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profiles Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInUp" style="animation-delay: 0.4s;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-table"></i> All TOTP Profiles</h5>
+                </div>
+                <div class="card-body">
+                    {% if profiles %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-person"></i> User ID</th>
+                                    <th><i class="bi bi-tag"></i> Label</th>
+                                    <th><i class="bi bi-building"></i> Issuer</th>
+                                    <th><i class="bi bi-shield"></i> Status</th>
+                                    <th><i class="bi bi-star"></i> Privilege</th>
+                                    <th><i class="bi bi-lock"></i> Private</th>
+                                    <th><i class="bi bi-tools"></i> Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for profile in profiles %}
+                                <tr>
+                                    <td class="small">{{ profile.user_id }}</td>
+                                    <td>{{ profile.metadata.label }}</td>
+                                    <td><span class="badge bg-info">{{ profile.metadata.issuer }}</span></td>
+                                    <td>
+                                        <span class="badge {% if profile.security_flags.revocation_state == 'Active' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ profile.security_flags.revocation_state }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if profile.security_flags.is_high_privilege %}
+                                        <span class="badge bg-warning"><i class="bi bi-star-fill"></i> High</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Standard</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if profile.security_flags.is_private %}
+                                        <i class="bi bi-lock-fill text-warning"></i>
+                                        {% else %}
+                                        <i class="bi bi-unlock text-muted"></i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if profile.id %}
+                                        <a href="{% url 'profile_detail' profile.id %}" class="btn btn-sm btn-primary">
+                                            <i class="bi bi-eye"></i> View
+                                        </a>
+                                        {% else %}
+                                        <span class="badge bg-warning">No ID</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No profiles found. Create one to get started.
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Pagination -->
+                    {% if total_pages > 1 %}
+                    <nav aria-label="Profile pagination" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item {% if not has_previous %}disabled{% endif %}">
+                                <a class="page-link" href="?page={{ page|add:'-1' }}" tabindex="-1">Previous</a>
+                            </li>
+                            <li class="page-item disabled">
+                                <span class="page-link">Page {{ page }} of {{ total_pages }}</span>
+                            </li>
+                            <li class="page-item {% if not has_next %}disabled{% endif %}">
+                                <a class="page-link" href="?page={{ page|add:'1' }}">Next</a>
+                            </li>
+                        </ul>
+                    </nav>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,949 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-2 px-sm-3 px-md-4 animate__animated animate__fadeIn">
+    <div class="row mb-3 mb-md-4">
+        <div class="col-12">
+            <h1 class="text-white mb-2 mb-md-3 h3 h2-md">
+                <i class="bi bi-hand-wave-fill"></i> <span class="d-none d-sm-inline">Welcome back, </span>{{ user.get_full_name|default:user.username }}!
+            </h1>
+            {% if subscription %}
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <span class="badge {% if subscription.plan_type == 'FREE' %}bg-secondary{% elif subscription.plan_type == 'PRO' %}bg-success{% else %}bg-warning text-dark{% endif %} px-2 px-sm-3 py-2">
+                    <i class="bi bi-{% if subscription.plan_type == 'FREE' %}gift{% elif subscription.plan_type == 'PRO' %}rocket-takeoff{% else %}building{% endif %}"></i>
+                    <span class="d-none d-sm-inline">{{ subscription.plan_name }}</span> Plan
+                </span>
+                {% if quota_info %}
+                {% if subscription.plan_type == 'ENTERPRISE' %}
+                <span class="badge bg-info px-2 px-sm-3 py-2">
+                    <i class="bi bi-qr-code"></i> <span class="d-none d-sm-inline">QR Codes:</span> {{ quota_info.used }}/∞
+                </span>
+                {% else %}
+                <span class="badge {% if not can_create_more %}bg-danger{% elif quota_info.remaining < 10 %}bg-warning{% else %}bg-info{% endif %} px-2 px-sm-3 py-2">
+                    <i class="bi bi-qr-code"></i> <span class="d-none d-sm-inline">QR:</span> {{ quota_info.used }}/{% if quota_info.limit == 'unlimited' %}∞{% else %}{{ quota_info.limit }}{% endif %}
+                </span>
+                {% endif %}
+                {% endif %}
+                {% if subscription.plan_type == 'FREE' %}
+                <a href="{% url 'pricing' %}" class="btn btn-warning btn-sm">
+                    <i class="bi bi-arrow-up-circle"></i> <span class="d-none d-sm-inline">Upgrade</span>
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quota Warning Banner -->
+    {% if quota_info and not can_create_more %}
+    <div class="alert alert-danger d-flex flex-column flex-md-row align-items-start align-items-md-center animate__animated animate__bounceIn mb-3 mb-md-4" role="alert">
+        <div class="d-flex align-items-center mb-2 mb-md-0">
+            <i class="bi bi-exclamation-triangle-fill fs-4 me-2 me-md-3"></i>
+            <div class="flex-grow-1">
+                <h6 class="alert-heading mb-1 h5-md">QR Code Limit Reached!</h6>
+                <p class="mb-0 small">You've used all {{ quota_info.limit }} QR codes. Upgrade for more!</p>
+            </div>
+        </div>
+        <a href="{% url 'pricing' %}" class="btn btn-light btn-sm ms-md-3 mt-2 mt-md-0">
+            <i class="bi bi-arrow-up-circle"></i> Upgrade
+        </a>
+    </div>
+    {% elif quota_info and quota_info.remaining < 10 and quota_info.limit != 'unlimited' %}
+    <div class="alert alert-warning d-flex align-items-center animate__animated animate__fadeIn mb-4" role="alert">
+        <i class="bi bi-exclamation-circle-fill fs-4 me-3"></i>
+        <div class="flex-grow-1">
+            <h6 class="mb-1">Running Low on QR Codes</h6>
+            <p class="mb-0">You have {{ quota_info.remaining }} QR codes remaining in your {{ subscription.plan_name }} plan.</p>
+        </div>
+        <a href="{% url 'pricing' %}" class="btn btn-warning btn-sm ms-3">
+            <i class="bi bi-arrow-up-circle"></i> Upgrade
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Quota Progress Card -->
+    {% if quota_info and quota_info.limit != 'unlimited' and subscription.plan_type != 'ENTERPRISE' %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card animate__animated animate__fadeInDown">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="mb-0"><i class="bi bi-pie-chart-fill"></i> QR Code Usage</h6>
+                        <span class="text-muted">{{ quota_info.used }} of {{ quota_info.limit }} used</span>
+                    </div>
+                    <div class="progress" style="height: 25px;">
+                        {% with percentage=quota_info.used|percentage:quota_info.limit %}
+                        <div class="progress-bar {% if percentage >= 100 %}bg-danger{% elif percentage >= 80 %}bg-warning{% else %}bg-success{% endif %} progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: {{ percentage }}%;" 
+                             aria-valuenow="{{ quota_info.used }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="{{ quota_info.limit }}">
+                            {{ percentage }}%
+                        </div>
+                        {% endwith %}
+                    </div>
+                    <div class="d-flex justify-content-between mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-check-circle-fill text-success"></i> {{ quota_info.remaining }} remaining
+                        </small>
+                        {% if subscription.plan_type == 'FREE' %}
+                        <small class="text-primary">
+                            <a href="{% url 'pricing' %}" class="text-decoration-none fw-bold">
+                                Upgrade for unlimited <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4 animate__animated animate__fadeInLeft">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-person-badge"></i> Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    {% if profile %}
+                        <div class="mb-3">
+                            <strong><i class="bi bi-tag"></i> Label:</strong>
+                            <span class="badge bg-primary ms-2">{{ profile.metadata.label }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="bi bi-building"></i> Issuer:</strong>
+                            <span class="text-muted">{{ profile.metadata.issuer }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="bi bi-gear"></i> Algorithm:</strong>
+                            <span class="badge bg-info">{{ profile.metadata.algorithm }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="bi bi-123"></i> Digits:</strong>
+                            <span class="badge bg-secondary">{{ profile.metadata.digits }}</span>
+                        </div>
+                        <div class="mb-3">
+                            <strong><i class="bi bi-clock"></i> Period:</strong>
+                            <span class="text-muted">{{ profile.metadata.period }}s</span>
+                        </div>
+                        <hr>
+                        <div class="mb-2">
+                            <strong>Security Status:</strong>
+                            <span class="badge {% if profile.security_flags.revocation_state == 'Active' %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ profile.security_flags.revocation_state }}
+                            </span>
+                        </div>
+                        {% if profile.security_flags.is_high_privilege %}
+                        <div class="alert alert-warning mt-2 mb-0">
+                            <i class="bi bi-shield-fill-exclamation"></i> High Privilege Account
+                        </div>
+                        {% endif %}
+                        {% if profile.security_flags.is_private %}
+                        <div class="alert alert-info mt-2 mb-0">
+                            <i class="bi bi-lock-fill"></i> Private Profile
+                        </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i> No TOTP Profile found.
+                        </div>
+                        <p class="text-muted small">Contact your administrator to create a profile.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if profile %}
+            <div class="card animate__animated animate__fadeInLeft" style="animation-delay: 0.2s;">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-award"></i> Kelley Attributes</h5>
+                </div>
+                <div class="card-body">
+                    {% for key, value in profile.kelley_attributes.items %}
+                    <div class="mb-2">
+                        <strong>{{ key|title }}:</strong>
+                        <span class="text-muted">{{ value }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Two-Factor Authentication Settings -->
+            {% if profile %}
+            <div class="card mb-4 animate__animated animate__fadeInLeft" style="animation-delay: 0.25s;">
+                <div class="card-header {% if is_2fa_enabled %}bg-success{% else %}bg-secondary{% endif %} text-white">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock-fill"></i> Two-Factor Authentication (2FA)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h6 class="mb-1">
+                                {% if is_2fa_enabled %}
+                                <span class="text-success"><i class="bi bi-check-circle-fill"></i> 2FA is ENABLED</span>
+                                {% else %}
+                                <span class="text-warning"><i class="bi bi-exclamation-triangle-fill"></i> 2FA is DISABLED</span>
+                                {% endif %}
+                            </h6>
+                            <p class="text-muted small mb-0">
+                                {% if is_2fa_enabled %}
+                                Your account is protected. You'll need your authenticator app code to login.
+                                {% else %}
+                                Enable 2FA to add an extra layer of security to your account.
+                                {% endif %}
+                            </p>
+                        </div>
+                        <form method="post" action="{% url 'toggle_2fa' %}" class="ms-3">
+                            {% csrf_token %}
+                            {% if is_2fa_enabled %}
+                            <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Are you sure you want to disable 2FA? Your account will be less secure.');">
+                                <i class="bi bi-shield-x"></i> Disable 2FA
+                            </button>
+                            {% else %}
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-shield-check"></i> Enable 2FA
+                            </button>
+                            {% endif %}
+                        </form>
+                    </div>
+                    {% if not is_2fa_enabled %}
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        <strong>How to enable 2FA:</strong>
+                        <ol class="mb-0 mt-2">
+                            <li>Install an authenticator app (Google Authenticator, Microsoft Authenticator, Authy, etc.)</li>
+                            <li>Scan the QR code shown in the "Your Authenticator QR Code" section below</li>
+                            <li>Click "Enable 2FA" button above</li>
+                            <li>Next time you login, you'll enter the 6-digit code from your app</li>
+                        </ol>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Danger Zone -->
+            <div class="card border-danger mb-4 animate__animated animate__fadeInLeft" style="animation-delay: 0.3s;">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0"><i class="bi bi-exclamation-triangle-fill"></i> Danger Zone</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">Once you delete your account, there is no going back. Please be certain.</p>
+                    <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                        <i class="bi bi-trash-fill"></i> Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- Custom URL QR Code Generator -->
+            {% if user.is_authenticated %}
+            <div class="card mb-4 animate__animated animate__fadeInRight">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                    <h5 class="mb-0 text-white"><i class="bi bi-link-45deg"></i> Generate Custom QR Code from URL</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Input & Customization Section -->
+                        <div class="col-md-6">
+                            <label for="customUrl" class="form-label fw-bold">
+                                <i class="bi bi-globe"></i> Enter URL or Text
+                            </label>
+                            <div class="input-group mb-3">
+                                <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="customUrl" 
+                                       placeholder="https://example.com or any text"
+                                       autocomplete="off">
+                            </div>
+                            
+                            <!-- Platform/Device Selector -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="bi bi-device-hdd"></i> Optimize for Platform
+                                </label>
+                                <select id="platformSelect" class="form-select">
+                                    <option value="medium" selected>🖥️ General Use (Recommended)</option>
+                                    <option value="mobile">📱 Mobile Devices</option>
+                                    <option value="ios">🍎 iPhone / iPad</option>
+                                    <option value="android">🤖 Android Devices</option>
+                                    <option value="small">📲 Small Mobile Screens</option>
+                                    <option value="large">💻 Desktop / Laptop</option>
+                                    <option value="16:9">🖥️ Widescreen (16:9)</option>
+                                    <option value="4:3">📺 Standard Screen (4:3)</option>
+                                    <option value="1:1">⬜ Square (1:1)</option>
+                                    <option value="custom">⚙️ Custom (Use Sliders)</option>
+                                </select>
+                                <small class="text-muted">
+                                    <i class="bi bi-info-circle"></i> Platform optimization adjusts size and border for best scanning
+                                </small>
+                            </div>
+                            
+                            <!-- Customization Options -->
+                            <h6 class="text-primary mb-3"><i class="bi bi-palette-fill"></i> Customize Colors</h6>
+                            
+                            <div class="row g-2 mb-3">
+                                <div class="col-6">
+                                    <label class="form-label small text-muted">QR Color</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-palette"></i></span>
+                                        <input type="color" id="customFgColor" class="form-control form-control-color" value="#000000">
+                                        <input type="text" id="customFgText" class="form-control" value="#000000" maxlength="7">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small text-muted">Background</label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text"><i class="bi bi-paint-bucket"></i></span>
+                                        <input type="color" id="customBgColor" class="form-control form-control-color" value="#ffffff">
+                                        <input type="text" id="customBgText" class="form-control" value="#ffffff" maxlength="7">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Presets -->
+                            <div class="mb-3">
+                                <label class="form-label small fw-bold"><i class="bi bi-stars"></i> Quick Presets</label>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="applyCustomPreset('#000000', '#ffffff')">Classic</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="applyCustomPreset('#0d6efd', '#ffffff')">Blue</button>
+                                    <button type="button" class="btn btn-sm btn-outline-success" onclick="applyCustomPreset('#198754', '#ffffff')">Green</button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="applyCustomPreset('#dc3545', '#ffffff')">Red</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Size Controls -->
+                            <div class="mb-3" id="customSizeControls">
+                                <label class="form-label small fw-bold">
+                                    <i class="bi bi-bounding-box"></i> Box Size: <span id="customBoxSizeValue">10</span>
+                                </label>
+                                <input type="range" id="customBoxSize" class="form-range" min="5" max="20" value="10">
+                            </div>
+                            
+                            <div class="mb-3" id="customBorderControls">
+                                <label class="form-label small fw-bold">
+                                    <i class="bi bi-border-width"></i> Border: <span id="customBorderValue">4</span>
+                                </label>
+                                <input type="range" id="customBorder" class="form-range" min="0" max="10" value="4">
+                            </div>
+                            
+                            <small class="text-muted d-block mb-3" id="platformNote">
+                                <i class="bi bi-lightbulb"></i> <span id="platformNoteText">Using general platform preset</span>
+                            </small>
+                            
+                            <button type="button" class="btn btn-success w-100" onclick="generateCustomQR()">
+                                <i class="bi bi-qr-code"></i> Generate QR Code
+                            </button>
+                        </div>
+                        
+                        <!-- Preview Section -->
+                        <div class="col-md-6 text-center">
+                            <label class="form-label fw-bold">
+                                <i class="bi bi-eye"></i> Live Preview
+                            </label>
+                            <div id="customQrPreview" class="p-4 bg-light rounded-3 shadow-sm" style="min-height: 350px; display: flex; align-items: center; justify-content: center;">
+                                <p class="text-muted"><i class="bi bi-qr-code-scan"></i> Enter URL and click Generate</p>
+                            </div>
+                            <button type="button" id="downloadCustomQR" class="btn btn-primary w-100 mt-3 d-none" onclick="downloadCustomQR()">
+                                <i class="bi bi-download"></i> Download QR Code
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Login Required Message -->
+            <div class="card mb-4 animate__animated animate__fadeInRight border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0"><i class="bi bi-lock-fill"></i> Custom QR Code Generator</h5>
+                </div>
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-qr-code-scan" style="font-size: 80px; color: #ffc107; opacity: 0.5;"></i>
+                    <h3 class="mt-4 mb-3">Login Required</h3>
+                    <p class="text-muted mb-4">
+                        Please login to access our custom QR code generator with full customization options including colors, sizes, and download capabilities.
+                    </p>
+                    <div class="d-grid gap-2 col-md-6 mx-auto">
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Login to Generate QR Codes
+                        </a>
+                        <a href="{% url 'register' %}" class="btn btn-outline-success">
+                            <i class="bi bi-person-plus"></i> Create Free Account
+                        </a>
+                    </div>
+                    <p class="text-muted small mt-4">
+                        <i class="bi bi-gift"></i> Free accounts get <strong>100 QR codes</strong> with full customization!
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Separator between URL QR and Authenticator QR -->
+            <div class="my-5 text-center">
+                <hr class="my-4">
+                <h4 class="text-muted">
+                    <i class="bi bi-shield-lock"></i> Authenticator Section
+                </h4>
+                <p class="text-muted small">TOTP (Time-based One-Time Password) for 2FA Authentication</p>
+                <hr class="my-4">
+            </div>
+
+            {% if profile %}
+            <div class="card mb-4 animate__animated animate__fadeInRight">
+                <div class="card-header bg-gradient" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 class="mb-0 text-white">
+                        <i class="bi bi-shield-check"></i> TOTP Authenticator QR Code
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="bi bi-info-circle-fill"></i> 
+                        <strong>Note:</strong> This is your TOTP authenticator QR code for two-factor authentication (2FA). 
+                        Scan it with apps like Google Authenticator, Microsoft Authenticator, or Authy to set up 2FA for your account.
+                    </div>
+                    
+                    <div class="row">
+                        <!-- QR Code Display Only -->
+                        <div class="col-md-6 offset-md-3 text-center">
+                            <h6 class="text-primary mb-3">
+                                <i class="bi bi-qr-code-scan"></i> Your Authenticator QR Code
+                            </h6>
+                            <div class="qr-preview-container p-4 bg-light rounded-3 shadow-sm mb-3" style="min-height: 350px; display: flex; align-items: center; justify-content: center;">
+                                <img src="{% url 'qr_code' profile.id %}" 
+                                     alt="TOTP QR Code" 
+                                     class="img-fluid" 
+                                     style="max-width: 300px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                            </div>
+                            <p class="text-muted small mb-2">
+                                <i class="bi bi-info-circle-fill"></i> Scan with your authenticator app
+                            </p>
+                            <p class="text-muted small mb-3">
+                                Compatible with Google Authenticator, Microsoft Authenticator, Authy
+                            </p>
+                            
+                            <!-- Download Button -->
+                            <a href="{% url 'download_qr' profile.id %}" class="btn btn-primary">
+                                <i class="bi bi-download"></i> Download QR Code
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success mt-4 mb-0">
+                        <i class="bi bi-shield-check"></i> <strong>Secured:</strong> Your QR code is encrypted with AES-256-GCM encryption
+                    </div>
+                </div>
+            </div>
+
+            <div class="card animate__animated animate__fadeInRight" style="animation-delay: 0.2s;">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-clock-history"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if audit_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th><i class="bi bi-calendar"></i> Timestamp</th>
+                                    <th><i class="bi bi-activity"></i> Event</th>
+                                    <th><i class="bi bi-person"></i> Actor</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in audit_logs %}
+                                <tr>
+                                    <td class="small">{{ log.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                    <td>
+                                        <span class="badge 
+                                            {% if log.event_type == 'PROFILE_CREATED' %}bg-success
+                                            {% elif log.event_type == 'VIEW_SEED' %}bg-warning
+                                            {% elif log.event_type == 'PROFILE_MODIFIED' %}bg-info
+                                            {% else %}bg-secondary{% endif %}">
+                                            {{ log.event_type }}
+                                        </span>
+                                    </td>
+                                    <td class="small">{{ log.actor.user_id }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center">No recent activity</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if profile.history %}
+            <div class="card mt-4 animate__animated animate__fadeInRight" style="animation-delay: 0.3s;">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="bi bi-journal-text"></i> Audit History</h5>
+                </div>
+                <ul class="list-group list-group-flush">
+                    {% for event in profile.history %}
+                        <li class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <small class="text-muted">
+                                        <i class="bi bi-clock"></i> {{ event.timestamp|date:"Y-m-d H:i:s" }}
+                                    </small>
+                                    <br>
+                                    <strong>Changes:</strong> {{ event.changes }}
+                                </div>
+                                <span class="badge bg-secondary">{{ event.actor.user_id }}</span>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title"><i class="bi bi-exclamation-triangle-fill"></i> Confirm Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fw-bold">Are you sure you want to delete your account?</p>
+                <p>This action will:</p>
+                <ul>
+                    <li>Permanently delete your login credentials</li>
+                    <li>Remove your TOTP profile and seed</li>
+                    <li>Revoke all access immediately</li>
+                </ul>
+                <p class="text-danger small mb-0">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form action="{% url 'delete_own_account' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Delete My Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// QR Code Customization for Dashboard
+{% if profile %}
+// TOTP QR Code - Static display, no customization
+{% endif %}
+
+// Custom URL QR Code Generation
+let customQRImage = null;
+let livePreviewTimeout = null;
+
+// Platform presets mapping
+const platformPresets = {
+    'small': { box_size: 8, border: 3, description: 'Optimized for small mobile screens' },
+    'medium': { box_size: 10, border: 4, description: 'Best for general use on all devices' },
+    'large': { box_size: 12, border: 5, description: 'Ideal for desktop and laptop displays' },
+    'mobile': { box_size: 10, border: 3, description: 'Optimized for mobile devices' },
+    '16:9': { box_size: 10, border: 4, description: 'Perfect for widescreen displays' },
+    '4:3': { box_size: 10, border: 4, description: 'Fits standard screen ratios' },
+    '1:1': { box_size: 10, border: 4, description: 'Square format, social media friendly' },
+    'ios': { box_size: 10, border: 4, description: 'Optimized for iPhone and iPad' },
+    'android': { box_size: 10, border: 4, description: 'Optimized for Android devices' }
+};
+
+// Handle platform selection
+function handlePlatformChange() {
+    const platform = document.getElementById('platformSelect').value;
+    const sizeControls = document.getElementById('customSizeControls');
+    const borderControls = document.getElementById('customBorderControls');
+    const noteText = document.getElementById('platformNoteText');
+    
+    if (platform === 'custom') {
+        // Show manual controls
+        sizeControls.style.opacity = '1';
+        borderControls.style.opacity = '1';
+        noteText.textContent = 'Using custom size settings';
+    } else {
+        // Apply preset and dim controls
+        const preset = platformPresets[platform];
+        if (preset) {
+            document.getElementById('customBoxSize').value = preset.box_size;
+            document.getElementById('customBorder').value = preset.border;
+            document.getElementById('customBoxSizeValue').textContent = preset.box_size;
+            document.getElementById('customBorderValue').textContent = preset.border;
+            noteText.textContent = preset.description;
+            
+            // Dim controls when using preset
+            sizeControls.style.opacity = '0.6';
+            borderControls.style.opacity = '0.6';
+        }
+    }
+    
+    debouncedLivePreview();
+}
+
+// Live preview function that generates QR without incrementing quota
+async function updateLivePreview() {
+    const urlInput = document.getElementById('customUrl');
+    const url = urlInput.value.trim();
+    
+    if (!url) {
+        const preview = document.getElementById('customQrPreview');
+        preview.innerHTML = '<p class="text-muted"><i class="bi bi-qr-code-scan"></i> Enter URL and click Generate</p>';
+        document.getElementById('downloadCustomQR').classList.add('d-none');
+        return;
+    }
+    
+    // Get customization values
+    const fgColor = document.getElementById('customFgColor').value.replace('#', '');
+    const bgColor = document.getElementById('customBgColor').value.replace('#', '');
+    const platform = document.getElementById('platformSelect').value;
+    const boxSize = document.getElementById('customBoxSize').value;
+    const border = document.getElementById('customBorder').value;
+    
+    const preview = document.getElementById('customQrPreview');
+    
+    try {
+        const requestBody = { 
+            url: url,
+            fg: fgColor,
+            bg: bgColor,
+            preview: true
+        };
+        
+        // Use platform preset or custom values
+        if (platform !== 'custom') {
+            requestBody.size = platform;
+        } else {
+            requestBody.box_size = boxSize;
+            requestBody.border = border;
+        }
+        
+        // Use a preview endpoint that doesn't count against quota
+        const response = await fetch('/preview-qr/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            
+            const platformName = document.getElementById('platformSelect').options[document.getElementById('platformSelect').selectedIndex].text;
+            preview.innerHTML = `
+                <div>
+                    <img src="${imageUrl}" alt="QR Code Preview" class="img-fluid rounded shadow" style="max-width: 300px;">
+                    <p class="text-muted small mt-2"><i class="bi bi-info-circle"></i> Live Preview - ${platformName}</p>
+                    <p class="text-muted small"><i class="bi bi-save"></i> Click "Generate" to save</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        // Silently fail for preview, don't show errors
+    }
+}
+
+// Debounced live preview update
+function debouncedLivePreview() {
+    clearTimeout(livePreviewTimeout);
+    livePreviewTimeout = setTimeout(updateLivePreview, 500);
+}
+
+async function generateCustomQR() {
+    const urlInput = document.getElementById('customUrl');
+    const url = urlInput.value.trim();
+    
+    if (!url) {
+        alert('⚠️ Please enter a URL or text');
+        return;
+    }
+    
+    // Client-side quota check first
+    try {
+        const quotaCheck = await fetch('/api/quota/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        if (quotaCheck.ok) {
+            const quotaData = await quotaCheck.json();
+            if (!quotaData.can_create) {
+                const preview = document.getElementById('customQrPreview');
+                preview.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <h5><i class="bi bi-exclamation-triangle-fill"></i> QR Code Limit Reached!</h5>
+                        <p>You have used ${quotaData.quota_info.used}/${quotaData.quota_info.limit} QR codes.</p>
+                        <p class="mb-0">Please upgrade your plan to create more QR codes.</p>
+                    </div>
+                    <a href="{% url 'pricing' %}" class="btn btn-warning w-100 mt-3">
+                        <i class="bi bi-arrow-up-circle"></i> Upgrade Now
+                    </a>
+                `;
+                return;
+            }
+        }
+    } catch (e) {
+        console.error('Quota check failed:', e);
+    }
+    
+    // Get customization values
+    const fgColor = document.getElementById('customFgColor').value.replace('#', '');
+    const bgColor = document.getElementById('customBgColor').value.replace('#', '');
+    const platform = document.getElementById('platformSelect').value;
+    const boxSize = document.getElementById('customBoxSize').value;
+    const border = document.getElementById('customBorder').value;
+    
+    const preview = document.getElementById('customQrPreview');
+    preview.innerHTML = '<div class="spinner-border text-success" role="status"><span class="visually-hidden">Generating...</span></div>';
+    
+    try {
+        const requestBody = { 
+            url: url,
+            fg: fgColor,
+            bg: bgColor
+        };
+        
+        // Use platform preset or custom values
+        if (platform !== 'custom') {
+            requestBody.size = platform;
+        } else {
+            requestBody.box_size = boxSize;
+            requestBody.border = border;
+        }
+        
+        const response = await fetch('/generate-qr/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const imageUrl = URL.createObjectURL(blob);
+            customQRImage = imageUrl;
+            
+            const platformName = document.getElementById('platformSelect').options[document.getElementById('platformSelect').selectedIndex].text;
+            preview.innerHTML = `
+                <div>
+                    <img src="${imageUrl}" alt="QR Code" class="img-fluid rounded shadow animate__animated animate__zoomIn" style="max-width: 300px;">
+                    <p class="text-success small mt-2"><i class="bi bi-check-circle-fill"></i> QR Code Generated & Saved</p>
+                    <p class="text-muted small">${platformName}</p>
+                </div>
+            `;
+            document.getElementById('downloadCustomQR').classList.remove('d-none');
+            
+            // Update quota counter without refreshing the page
+            updateQuotaDisplay();
+        } else {
+            // Handle error responses (403, 400, etc.)
+            try {
+                const error = await response.json();
+                preview.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill"></i> ${error.error || 'Failed to generate QR code'}
+                    </div>
+                `;
+                // Show upgrade button if quota exceeded
+                if (response.status === 403) {
+                    preview.innerHTML += `
+                        <a href="{% url 'pricing' %}" class="btn btn-warning w-100 mt-2">
+                            <i class="bi bi-arrow-up-circle"></i> Upgrade Plan
+                        </a>
+                    `;
+                }
+            } catch (e) {
+                preview.innerHTML = `<p class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error: ${response.statusText}</p>`;
+            }
+        }
+    } catch (error) {
+        preview.innerHTML = `<p class="text-danger"><i class="bi bi-exclamation-triangle"></i> Error: ${error.message}</p>`;
+    }
+}
+
+function downloadCustomQR() {
+    if (customQRImage) {
+        const a = document.createElement('a');
+        a.href = customQRImage;
+        a.download = 'custom-qr-code.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+}
+
+// Apply custom preset
+function applyCustomPreset(fg, bg) {
+    document.getElementById('customFgColor').value = fg;
+    document.getElementById('customBgColor').value = bg;
+    document.getElementById('customFgText').value = fg;
+    document.getElementById('customBgText').value = bg;
+    debouncedLivePreview(); // Update preview when preset is applied
+}
+
+// Update slider values display and trigger live preview
+document.getElementById('customBoxSize')?.addEventListener('input', (e) => {
+    document.getElementById('customBoxSizeValue').textContent = e.target.value;
+    debouncedLivePreview();
+});
+
+document.getElementById('customBorder')?.addEventListener('input', (e) => {
+    document.getElementById('customBorderValue').textContent = e.target.value;
+    debouncedLivePreview();
+});
+
+// Sync color text inputs and trigger live preview
+document.getElementById('customFgText')?.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+        document.getElementById('customFgColor').value = val;
+        debouncedLivePreview();
+    }
+});
+
+document.getElementById('customBgText')?.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (/^#[0-9A-F]{6}$/i.test(val)) {
+        document.getElementById('customBgColor').value = val;
+        debouncedLivePreview();
+    }
+});
+
+// Sync color pickers and trigger live preview
+document.getElementById('customFgColor')?.addEventListener('input', (e) => {
+    document.getElementById('customFgText').value = e.target.value;
+    debouncedLivePreview();
+});
+
+document.getElementById('customBgColor')?.addEventListener('input', (e) => {
+    document.getElementById('customBgText').value = e.target.value;
+    debouncedLivePreview();
+});
+
+// Platform selector change
+document.getElementById('platformSelect')?.addEventListener('change', handlePlatformChange);
+
+// Enter key to generate and trigger live preview on URL input
+document.getElementById('customUrl')?.addEventListener('input', () => {
+    debouncedLivePreview();
+});
+
+document.getElementById('customUrl')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        generateCustomQR();
+    }
+});
+
+// Function to update quota display without page refresh
+async function updateQuotaDisplay() {
+    try {
+        const response = await fetch('/api/quota/', {
+            method: 'GET',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Update quota badge (more specific selector)
+            const quotaBadges = document.querySelectorAll('.badge');
+            quotaBadges.forEach(badge => {
+                if (badge.textContent.includes('QR Codes:') || badge.querySelector('.bi-qr-code')) {
+                    const planType = '{{ subscription.plan_type }}';
+                    if (planType === 'ENTERPRISE') {
+                        badge.innerHTML = `<i class="bi bi-qr-code"></i> QR Codes: ${data.quota_info.used}/∞ Unlimited`;
+                        badge.className = 'badge bg-info px-3 py-2';
+                    } else if (data.quota_info.limit === 'unlimited') {
+                        badge.innerHTML = `<i class="bi bi-qr-code"></i> QR Codes: ${data.quota_info.used}/∞`;
+                        badge.className = 'badge bg-info px-3 py-2';
+                    } else {
+                        badge.innerHTML = `<i class="bi bi-qr-code"></i> QR Codes: ${data.quota_info.used}/${data.quota_info.limit}`;
+                        
+                        // Update badge color based on remaining quota
+                        badge.className = 'badge px-3 py-2';
+                        if (!data.can_create) {
+                            badge.classList.add('bg-danger');
+                        } else if (data.quota_info.remaining < 10) {
+                            badge.classList.add('bg-warning');
+                        } else {
+                            badge.classList.add('bg-info');
+                        }
+                    }
+                }
+            });
+            
+            // Update quota text in progress card (specific to quota card)
+            const quotaCard = document.querySelector('.card-body');
+            if (quotaCard) {
+                const quotaTexts = quotaCard.querySelectorAll('span.text-muted');
+                quotaTexts.forEach(span => {
+                    if (span.textContent.includes('of') && span.textContent.includes('used')) {
+                        if (data.quota_info.limit !== 'unlimited') {
+                            span.textContent = `${data.quota_info.used} of ${data.quota_info.limit} used`;
+                        }
+                    }
+                });
+            }
+            
+            // Update progress bar
+            const progressBars = document.querySelectorAll('.progress-bar');
+            progressBars.forEach(bar => {
+                if (bar.getAttribute('aria-valuemax') && data.quota_info.limit !== 'unlimited') {
+                    const percentage = Math.round((data.quota_info.used / data.quota_info.limit) * 100);
+                    bar.style.width = percentage + '%';
+                    bar.textContent = percentage + '%';
+                    bar.setAttribute('aria-valuenow', data.quota_info.used);
+                    bar.setAttribute('aria-valuemax', data.quota_info.limit);
+                    
+                    // Update color
+                    bar.className = 'progress-bar progress-bar-striped progress-bar-animated';
+                    if (percentage >= 100) {
+                        bar.classList.add('bg-danger');
+                    } else if (percentage >= 80) {
+                        bar.classList.add('bg-warning');
+                    } else {
+                        bar.classList.add('bg-success');
+                    }
+                }
+            });
+            
+            // Update remaining count (look for specific pattern)
+            const smallTexts = document.querySelectorAll('small.text-muted');
+            smallTexts.forEach(small => {
+                if (small.textContent.includes('remaining')) {
+                    if (data.quota_info.remaining !== 'unlimited') {
+                        small.innerHTML = `<i class="bi bi-check-circle-fill text-success"></i> ${data.quota_info.remaining} remaining`;
+                    }
+                }
+            });
+            
+            console.log('✅ Quota display updated successfully:', data);
+        }
+    } catch (error) {
+        console.error('❌ Failed to update quota:', error);
+    }
+}
+
+</script>
+
+{% endblock %}
+
