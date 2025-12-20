@@ -34,7 +34,8 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['*']
+# OR better security: ['your-app-name.azurewebsites.net', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -273,4 +274,7 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'KTVS QR Code Generator <noreply@ktvs.com>')
+
+# Site URL for email links (change in production)
+SITE_URL = os.getenv('SITE_URL', 'http://127.0.0.1:8000')
 

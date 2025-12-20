@@ -7,10 +7,16 @@ from django.core.mail import send_mail, EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils.html import strip_tags
+from datetime import datetime
 
 
 class EmailService:
     """Professional email service for user communications"""
+    
+    @staticmethod
+    def get_site_url() -> str:
+        """Get the site URL from settings or default"""
+        return getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
     
     @staticmethod
     def send_welcome_email(user_email: str, username: str) -> bool:
@@ -24,73 +30,115 @@ class EmailService:
         Returns:
             bool: True if email sent successfully
         """
-        subject = 'Welcome to KTVS QR Code Generator'
+        site_url = EmailService.get_site_url()
+        current_year = datetime.now().year
+        
+        subject = 'Welcome to KTVS QR Code Generator - Your Account is Ready'
         
         html_message = f"""
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.8; color: #2d3748; margin: 0; padding: 0; background-color: #f7fafc; }}
         .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
-        .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
-        .feature {{ background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #667eea; }}
-        .footer {{ text-align: center; margin-top: 30px; padding: 20px; color: #666; font-size: 12px; }}
-        .button {{ display: inline-block; padding: 12px 30px; background: #667eea; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }}
-        h1 {{ margin: 0; font-size: 28px; }}
-        h2 {{ color: #667eea; margin-top: 0; }}
+        .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px 30px; text-align: center; border-radius: 12px 12px 0 0; }}
+        .header h1 {{ margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 0.5px; }}
+        .header .subtitle {{ margin-top: 10px; font-size: 14px; opacity: 0.9; }}
+        .content {{ background: #ffffff; padding: 40px 35px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }}
+        .greeting {{ font-size: 18px; color: #1a202c; margin-bottom: 20px; }}
+        .intro-text {{ color: #4a5568; font-size: 15px; margin-bottom: 25px; }}
+        .section-title {{ color: #667eea; font-size: 18px; font-weight: 600; margin: 30px 0 15px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }}
+        .feature {{ background: #f8fafc; padding: 18px 20px; margin: 12px 0; border-left: 4px solid #667eea; border-radius: 0 8px 8px 0; }}
+        .feature-title {{ font-weight: 600; color: #2d3748; margin-bottom: 5px; font-size: 15px; }}
+        .feature-desc {{ color: #718096; font-size: 14px; margin: 0; }}
+        .cta-section {{ text-align: center; margin: 35px 0; padding: 25px; background: linear-gradient(135deg, #f0f4ff 0%, #faf5ff 100%); border-radius: 10px; }}
+        .cta-text {{ color: #4a5568; font-size: 15px; margin-bottom: 20px; }}
+        .button {{ display: inline-block; padding: 14px 35px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 15px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35); transition: all 0.3s ease; }}
+        .button:hover {{ box-shadow: 0 6px 20px rgba(102, 126, 234, 0.45); }}
+        .info-box {{ background: #ebf8ff; border: 1px solid #bee3f8; padding: 18px; border-radius: 8px; margin: 25px 0; }}
+        .info-box p {{ margin: 0; color: #2b6cb0; font-size: 14px; }}
+        .closing {{ margin-top: 30px; color: #4a5568; font-size: 15px; }}
+        .signature {{ margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; }}
+        .signature p {{ margin: 5px 0; color: #2d3748; }}
+        .footer {{ text-align: center; margin-top: 30px; padding: 25px; color: #a0aec0; font-size: 12px; }}
+        .footer a {{ color: #667eea; text-decoration: none; }}
+        .social-links {{ margin: 15px 0; }}
+        .divider {{ border: none; border-top: 1px solid #e2e8f0; margin: 30px 0; }}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎉 Welcome to KTVS QR Code Generator</h1>
+            <h1>Welcome to KTVS QR Code Generator</h1>
+            <p class="subtitle">Your Professional QR Code Management Solution</p>
         </div>
         <div class="content">
-            <p>Dear {username},</p>
+            <p class="greeting">Dear <strong>{username}</strong>,</p>
             
-            <p>We are delighted to welcome you to <strong>KTVS QR Code Generator</strong>, your comprehensive solution for creating professional QR codes and managing two-factor authentication.</p>
+            <p class="intro-text">
+                On behalf of the entire KTVS team, we are honored to welcome you to our platform. 
+                Thank you for choosing KTVS QR Code Generator as your trusted partner for creating 
+                professional QR codes and managing secure two-factor authentication.
+            </p>
             
-            <h2>Your Account Has Been Successfully Created</h2>
+            <p class="intro-text">
+                Your account has been successfully created and is now ready for use. We are committed 
+                to providing you with an exceptional experience and the highest level of service.
+            </p>
             
-            <p>You now have access to our powerful features:</p>
-            
-            <div class="feature">
-                <strong>✅ Custom QR Code Generation</strong><br>
-                Create customizable QR codes for URLs, text, and any content with full color and styling options.
-            </div>
-            
-            <div class="feature">
-                <strong>✅ TOTP Authentication</strong><br>
-                Secure two-factor authentication (2FA) QR codes compatible with Google Authenticator, Microsoft Authenticator, and Authy.
-            </div>
+            <h2 class="section-title">Your Account Benefits</h2>
             
             <div class="feature">
-                <strong>✅ Free Plan Benefits</strong><br>
-                Generate up to <strong>100 QR codes</strong> with 100MB storage on your Free plan.
+                <p class="feature-title">🎨 Professional QR Code Generation</p>
+                <p class="feature-desc">Create fully customizable QR codes with advanced styling options, colors, and formats suitable for business and personal use.</p>
             </div>
             
             <div class="feature">
-                <strong>✅ Advanced Security</strong><br>
-                AES-256-GCM encryption, secure session management, and comprehensive audit logging.
+                <p class="feature-title">🔐 Secure Two-Factor Authentication</p>
+                <p class="feature-desc">Generate TOTP-based 2FA codes compatible with Google Authenticator, Microsoft Authenticator, Authy, and other leading authentication applications.</p>
             </div>
             
-            <p style="margin-top: 30px;">Ready to get started? Access your dashboard to begin creating QR codes:</p>
-            
-            <div style="text-align: center;">
-                <a href="http://127.0.0.1:8000/dashboard/" class="button">Go to Dashboard</a>
+            <div class="feature">
+                <p class="feature-title">📊 Free Plan Entitlements</p>
+                <p class="feature-desc">Your complimentary plan includes the generation of up to 100 QR codes with 100MB of secure storage.</p>
             </div>
             
-            <p style="margin-top: 30px;">If you have any questions or need assistance, please don't hesitate to contact our support team.</p>
+            <div class="feature">
+                <p class="feature-title">🛡️ Enterprise-Grade Security</p>
+                <p class="feature-desc">Benefit from AES-256-GCM encryption, secure session management, and comprehensive audit logging to protect your data.</p>
+            </div>
             
-            <p>Best regards,<br>
-            <strong>The KTVS Team</strong><br>
-            KTVS QR Code Generator</p>
+            <div class="cta-section">
+                <p class="cta-text">We invite you to access your personal dashboard and begin exploring our features:</p>
+                <a href="{site_url}/dashboard/" class="button">Access Your Dashboard</a>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>📧 Email Verification Required:</strong> To ensure the security of your account, please verify your email address using the verification link we have sent separately. This step is essential before you can log in.</p>
+            </div>
+            
+            <hr class="divider">
+            
+            <p class="closing">
+                Should you have any questions, require assistance, or wish to provide feedback, 
+                please do not hesitate to contact our support team. We are dedicated to ensuring 
+                your complete satisfaction with our services.
+            </p>
+            
+            <div class="signature">
+                <p>With warm regards,</p>
+                <p><strong>The KTVS Team</strong></p>
+                <p style="color: #718096; font-size: 14px;">KTVS QR Code Generator</p>
+            </div>
         </div>
         <div class="footer">
-            <p>This is an automated message. Please do not reply to this email.</p>
-            <p>&copy; 2025 KTVS QR Code Generator. All rights reserved.</p>
+            <p>This is an automated message from KTVS QR Code Generator.</p>
+            <p>Please do not reply directly to this email.</p>
+            <p style="margin-top: 15px;">&copy; {current_year} KTVS QR Code Generator. All rights reserved.</p>
+            <p><a href="{site_url}/privacy-policy/">Privacy Policy</a> | <a href="{site_url}/terms-of-service/">Terms of Service</a></p>
         </div>
     </div>
 </body>
@@ -100,35 +148,52 @@ class EmailService:
         plain_message = f"""
 Dear {username},
 
-We are delighted to welcome you to KTVS QR Code Generator, your comprehensive solution for creating professional QR codes and managing two-factor authentication.
+WELCOME TO KTVS QR CODE GENERATOR
 
-YOUR ACCOUNT HAS BEEN SUCCESSFULLY CREATED
+On behalf of the entire KTVS team, we are honored to welcome you to our platform. Thank you for choosing KTVS QR Code Generator as your trusted partner for creating professional QR codes and managing secure two-factor authentication.
 
-You now have access to our powerful features:
+Your account has been successfully created and is now ready for use. We are committed to providing you with an exceptional experience and the highest level of service.
 
-✅ Custom QR Code Generation
-   Create customizable QR codes for URLs, text, and any content with full color and styling options.
+═══════════════════════════════════════════════════════
+YOUR ACCOUNT BENEFITS
+═══════════════════════════════════════════════════════
 
-✅ TOTP Authentication
-   Secure two-factor authentication (2FA) QR codes compatible with Google Authenticator, Microsoft Authenticator, and Authy.
+🎨 PROFESSIONAL QR CODE GENERATION
+   Create fully customizable QR codes with advanced styling options, colors, and formats suitable for business and personal use.
 
-✅ Free Plan Benefits
-   Generate up to 100 QR codes with 100MB storage on your Free plan.
+🔐 SECURE TWO-FACTOR AUTHENTICATION
+   Generate TOTP-based 2FA codes compatible with Google Authenticator, Microsoft Authenticator, Authy, and other leading authentication applications.
 
-✅ Advanced Security
-   AES-256-GCM encryption, secure session management, and comprehensive audit logging.
+📊 FREE PLAN ENTITLEMENTS
+   Your complimentary plan includes the generation of up to 100 QR codes with 100MB of secure storage.
 
-Ready to get started? Access your dashboard: http://127.0.0.1:8000/dashboard/
+🛡️ ENTERPRISE-GRADE SECURITY
+   Benefit from AES-256-GCM encryption, secure session management, and comprehensive audit logging to protect your data.
 
-If you have any questions or need assistance, please don't hesitate to contact our support team.
+═══════════════════════════════════════════════════════
 
-Best regards,
+ACCESS YOUR DASHBOARD
+We invite you to access your personal dashboard and begin exploring our features:
+{site_url}/dashboard/
+
+IMPORTANT: EMAIL VERIFICATION REQUIRED
+To ensure the security of your account, please verify your email address using the verification link we have sent separately. This step is essential before you can log in.
+
+═══════════════════════════════════════════════════════
+
+Should you have any questions, require assistance, or wish to provide feedback, please do not hesitate to contact our support team. We are dedicated to ensuring your complete satisfaction with our services.
+
+With warm regards,
 The KTVS Team
 KTVS QR Code Generator
 
 ---
-This is an automated message. Please do not reply to this email.
-© 2025 KTVS QR Code Generator. All rights reserved.
+This is an automated message from KTVS QR Code Generator.
+Please do not reply directly to this email.
+
+© {current_year} KTVS QR Code Generator. All rights reserved.
+Privacy Policy: {site_url}/privacy-policy/
+Terms of Service: {site_url}/terms-of-service/
 """
         
         try:
